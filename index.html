@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Дело Эвелин Рэйн</title>
+<meta name="theme-color" content="#cdd5cf">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Marck+Script&family=IBM+Plex+Mono:wght@400;500;600&family=Old+Standard+TT:wght@400;700&family=Oswald:wght@400;500;600&display=swap">
+<style>
+/* Layout: one manila case-file sheet at a time on an institutional green-grey desk; folder tabs on top, red stamp for appendices. */
+:root{
+  --bg:#cdd5cf;
+  --paper:#efe6c8;
+  --paper2:#e5dbb9;
+  --ink:#26231c;
+  --ink2:#5d5747;
+  --line:#b5a77d;
+  --stamp:#9a2218;
+  --steel:#2d4656;
+  --steel-ink:#f3efe0;
+  --f-display:'Old Standard TT',Georgia,'Times New Roman',serif;
+  --f-type:'IBM Plex Mono','Courier New',monospace;
+  --f-label:'Oswald','Arial Narrow',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131a18;--paper:#1f2824;--paper2:#273029;--ink:#e8e1c8;--ink2:#a9a388;--line:#3b473f;--stamp:#e2594b;--steel:#8fb3c7;--steel-ink:#10181b;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131a18;--paper:#1f2824;--paper2:#273029;--ink:#e8e1c8;--ink2:#a9a388;--line:#3b473f;--stamp:#e2594b;--steel:#8fb3c7;--steel-ink:#10181b;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-type);font-size:15px;line-height:1.6;
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+*{box-sizing:border-box}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;border-bottom:3px double var(--ink);padding-bottom:10px}
+.case-no{font-family:var(--f-label);letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
+h1{font-family:var(--f-display);font-size:clamp(26px,6vw,36px);line-height:1.1;margin:2px 0 0;text-wrap:balance}
+.meta{font-family:var(--f-label);font-size:13px;letter-spacing:.08em;text-transform:uppercase;text-align:right;color:var(--ink2)}
+.meta b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px}
+nav.tabs button{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:14px;padding:9px 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;border-radius:2px 2px 0 0}
+nav.tabs button[aria-selected="true"]{background:var(--steel);color:var(--steel-ink);border-color:var(--steel)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+.sheet{background:var(--paper);border:1px solid var(--line);padding:18px max(16px,3vw);display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 0 var(--line),0 6px 0 -3px var(--paper2)}
+.sheet h2{font-family:var(--f-display);font-size:22px;margin:0;text-wrap:balance}
+.label{font-family:var(--f-label);letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
+p{margin:0}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+input[type=text],select{font:inherit;font-size:16px;background:var(--bg);color:var(--ink);border:1px solid var(--ink);padding:10px 12px;border-radius:2px;min-width:0;flex:1 1 220px;width:100%}
+input[type=text]{font-family:var(--f-type)}
+.btn{font-family:var(--f-label);letter-spacing:.12em;text-transform:uppercase;font-size:15px;padding:10px 18px;background:var(--steel);color:var(--steel-ink);border:0;border-radius:2px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.btn.stamp{background:var(--stamp);color:#fff}
+.hint{font-size:13px;color:var(--ink2)}
+.entry{border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.entry:first-child{border-top:0;padding-top:0}
+.entry .q{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:13px;color:var(--steel)}
+.entry .t{white-space:pre-line}
+.stampbox{width:fit-content;border:3px solid var(--stamp);color:var(--stamp);padding:8px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;transform:rotate(-1deg);align-self:flex-start;max-width:100%}
+.stampbox .n{font-family:var(--f-label);font-weight:600;font-size:26px;letter-spacing:.1em;text-transform:uppercase;line-height:1}
+.stampbox .d{font-size:13px;color:var(--ink)}
+.apps{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.apps li{display:flex;gap:10px;align-items:baseline;border-bottom:1px dotted var(--line);padding:6px 0}
+.apps .no{font-family:var(--f-label);font-weight:600;color:var(--stamp);min-width:2.6em}
+.empty{color:var(--ink2);font-style:italic}
+.ans{display:flex;flex-direction:column;gap:6px}
+.res{font-family:var(--f-display);font-size:30px;font-weight:700}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
+.chk input{margin-top:6px;width:18px;height:18px;accent-color:var(--steel)}
+details summary{cursor:pointer;font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:13px}
+details ul{margin:8px 0 0;padding-left:20px}
+.foot{font-size:12px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.foot button{background:none;border:0;color:var(--ink2);text-decoration:underline;font:inherit;cursor:pointer;padding:0}
+[hidden]{display:none!important}
+/* --- приложения на экране --- */
+.apx{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.45;color:#1c1a15;box-sizing:border-box;margin:8px 0 0;max-width:640px;border:1px solid #1c1a15;overflow-x:auto}
+.apx *{box-sizing:border-box}
+.apx .page{width:148mm;height:210mm;padding:11mm 11mm 10mm;position:relative;overflow:hidden;page-break-after:always;display:flex;flex-direction:column}
+.apx .page:last-child{page-break-after:auto}
+.apx .tag{position:absolute;top:6mm;right:6mm;border:1.6px solid #9b2a20;color:#9b2a20;font-family:'Oswald';font-weight:600;letter-spacing:.14em;font-size:8.5pt;padding:.6mm 2.4mm;text-transform:uppercase;transform:rotate(2deg);background:rgba(255,255,255,.4)}
+.apx .paper-white{background:#f6f2e7}
+.apx .paper-green{background:#e3e9df}
+.apx .paper-manila{background:#e7d9ae}
+.apx .paper-lined{background:#f3efe2;background-image:repeating-linear-gradient(transparent 0 6.6mm,#9db3c9 6.6mm 6.9mm)}
+.apx .paper-grey{background:#d9d6cd}
+.apx .form-h{font-family:'Old Standard TT',serif;text-align:center;border-top:3px double #1c1a15;border-bottom:1px solid #1c1a15;padding:1.5mm 0;margin:0 0 4mm}
+.apx .form-h .a{font-family:'Oswald';letter-spacing:.2em;font-size:8pt;text-transform:uppercase}
+.apx .form-h .b{font-weight:700;font-size:15pt;line-height:1.1;text-transform:uppercase}
+.apx .row{display:flex;gap:3mm;border-bottom:1px solid #1c1a15;padding:.8mm 0;align-items:baseline}
+.apx .row .k{font-family:'Oswald';letter-spacing:.1em;text-transform:uppercase;font-size:7.4pt;min-width:34mm;color:#5a554a}
+.apx .row .v{flex:1}
+.apx .stamp{border:2px solid #9b2a20;color:#9b2a20;font-family:'Oswald';font-weight:600;letter-spacing:.16em;text-transform:uppercase;padding:1mm 3mm;display:inline-block;transform:rotate(-3deg)}
+.apx .hand{font-family:'Caveat',cursive;font-size:14pt;line-height:1.05;color:#1f2f58}
+.apx .hand-m{font-family:'Marck Script',cursive;color:#1f2f58}
+.apx table{border-collapse:collapse;width:100%}
+.apx th,.apx td{border:1px solid #1c1a15;padding:1.2mm 1.6mm;text-align:left;vertical-align:top}
+.apx th{font-family:'Oswald';letter-spacing:.08em;text-transform:uppercase;font-weight:600;font-size:7.2pt;background:rgba(0,0,0,.07)}
+.apx .photo{border:2.2mm solid #f4f0e6;box-shadow:0 0 0 .3mm #1c1a15;background:#ccc;position:relative}
+.apx .photo svg{display:block;width:100%;height:auto}
+.apx .cap{font-family:'Courier Prime','IBM Plex Mono',monospace;font-size:8pt;margin-top:3mm}
+.apx .foot{margin-top:auto;font-size:7.2pt;color:#5a554a;border-top:1px solid #1c1a15;padding-top:1mm;display:flex;justify-content:space-between;font-family:'Oswald';letter-spacing:.12em;text-transform:uppercase}
+.apx .sm{font-size:8pt}
+.apx .ind{text-indent:0;margin:0 0 2mm}
+.apx .page{width:100%;height:auto;min-height:0;padding:16px;page-break-after:auto;display:block}
+.apx .tag{display:none}
+.apx .foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.apx .row{flex-wrap:wrap}
+.apx .row .k{min-width:0;flex:0 0 100%}
+.apx table{font-size:11.5px}
+.apx .photo{margin-bottom:8px}
+.apxbtn{margin-top:6px}
+.apps li{flex-wrap:wrap}
+.apps .apxwrap{flex:0 0 100%;min-width:0}
+/* --- оформление 50-х и сворачиваемые записи --- */
+:root{--stripe:rgba(0,0,0,.035);--clip:#7f878c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--stripe:rgba(255,255,255,.035);--clip:#9aa5aa}}
+:root[data-theme="dark"]{--stripe:rgba(255,255,255,.035);--clip:#9aa5aa}
+body{background-image:repeating-linear-gradient(90deg,var(--stripe) 0 2px,transparent 2px 18px)}
+header.top{position:relative}
+.case-no::after{content:" · Секретно";color:var(--stamp)}
+h1{letter-spacing:.01em;text-shadow:1px 1px 0 var(--paper2)}
+nav.tabs{gap:3px;border-bottom:2px solid var(--ink);padding-top:6px}
+nav.tabs button{background:var(--paper2);border:1px solid var(--ink);border-bottom:0;border-radius:7px 7px 0 0;margin-bottom:-2px;padding:9px 14px 8px}
+nav.tabs button[aria-selected="true"]{background:var(--paper);color:var(--ink);border-color:var(--ink);border-top:4px solid var(--stamp);padding-top:6px;font-weight:600}
+.sheet{position:relative;margin-top:10px;background-image:linear-gradient(180deg,rgba(255,255,255,.18),transparent 40%),repeating-linear-gradient(0deg,rgba(0,0,0,.018) 0 1px,transparent 1px 4px)}
+.sheet::before{content:"";position:absolute;top:-16px;right:22px;width:24px;height:54px;pointer-events:none;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 56'%3E%3Cpath d='M8 40V12a6 6 0 0 1 12 0v32a9 9 0 0 1-18 0V16' fill='none' stroke='%237f878c' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E")}
+.btn{border-radius:3px;box-shadow:0 3px 0 rgba(0,0,0,.35);transition:transform .05s,box-shadow .05s,filter .15s;touch-action:manipulation}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+input[type=text],select{background:var(--paper2);border-width:1px 1px 3px;border-color:var(--ink)}
+.stampbox{animation:stampin .45s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes stampin{from{opacity:0;transform:scale(1.9) rotate(-9deg)}to{opacity:1;transform:rotate(-1deg)}}
+@media (prefers-reduced-motion: reduce){.stampbox{animation:none}.btn,.chev{transition:none}}
+.entry{gap:6px}
+.ehead{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:6px 0;cursor:pointer;color:var(--ink);font:inherit}
+.el{display:flex;flex-direction:column;gap:2px;min-width:0}
+.et{font-family:var(--f-display);font-size:20px;font-weight:700;line-height:1.2}
+.prev{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{flex:none;font-size:18px;color:var(--stamp);transition:transform .2s}
+.entry.collapsed .chev{transform:rotate(-90deg)}
+.entry.collapsed .ebody{display:none}
+.entry:not(.collapsed) .prev{display:none}
+.ebody{display:flex;flex-direction:column;gap:8px}
+.note{font-size:12.5px;color:var(--stamp);font-family:var(--f-label);letter-spacing:.08em;text-transform:uppercase}
+.foldbar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.mini{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:12px;padding:6px 12px;min-height:36px;touch-action:manipulation;background:transparent;color:var(--ink);border:1px solid var(--ink);border-radius:2px;cursor:pointer}
+.given{font-family:var(--f-type);border-bottom:1px dotted var(--line);padding:2px 0}
+
+.dh{font-family:var(--f-label);letter-spacing:.12em;text-transform:uppercase;font-size:14px;margin:14px 0 4px;border-bottom:1px solid var(--ink)}
+.dirlist{list-style:none;margin:0;padding:0;columns:2 260px;column-gap:24px}
+.dirlist li{display:flex;align-items:baseline;gap:8px;padding:2px 0;break-inside:avoid}
+.dirlist i{flex:1;border-bottom:1px dotted var(--ink2);transform:translateY(-3px);min-width:10px}
+.dirlist .dn{overflow-wrap:anywhere}
+.addr{font-family:var(--f-label);font-weight:600;letter-spacing:.06em;font-size:14px;background:transparent;color:var(--steel);border:1px solid transparent;border-radius:3px;padding:2px 8px;min-height:30px;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.addr:hover{background:var(--steel);color:var(--steel-ink)}
+.acq{margin:0 0 6px}
+.dmap svg{width:100%;height:auto;display:block;border:1px solid var(--ink);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-label);letter-spacing:.08em;font-size:13px;padding:6px 12px;min-height:34px;touch-action:manipulation;border:1px solid var(--ink);border-radius:999px;background:var(--paper2);color:var(--ink);cursor:pointer}
+.chip:hover,.mini:hover{background:var(--steel);color:var(--steel-ink)}
+.ehead:hover .et{text-decoration:underline}
+nav.tabs button{touch-action:manipulation}
+nav.tabs button:hover{background:var(--paper)}
+#mClock,.res,.stampbox .n,.apps .no{font-variant-numeric:tabular-nums}
+.meta{overflow-wrap:anywhere;max-width:100%}
+.ehead{touch-action:manipulation}
+.et,.entry .t{overflow-wrap:anywhere}
+</style>
+<style>body{margin:0}</style></head><body>
+
+<div class="wrap" id="app">
+  <header class="top">
+    <div>
+      <div class="case-no">Полиция Фэрхейвена · Дело № 1956-11-06</div>
+      <h1>Тихая бухгалтерия</h1>
+    </div>
+    <div class="meta" id="meta" hidden>Команда: <b id="mTeam"></b><br>В деле: <b id="mClock">0 мин</b></div>
+  </header>
+
+  <section class="sheet" id="intro" hidden>
+    <div class="label">Вторник, 6 ноября 1956</div>
+    <h2>Новое дело</h2>
+    <p>В 06:10 ночной сторож Ной Бэрроу нашёл в конторе склада №4 компании «Харлоу Фрейт» (порт, адрес П-12) тело главного бухгалтера Эвелин Рэйн, 32 года. Один выстрел. Оружия на месте нет.</p>
+    <p>Весь город сегодня голосует, и мэр хочет закрыть дело до закрытия участков. Вы получаете справочник, газету и доступ к городским картотекам.</p>
+    <label class="label" for="teamName">Название команды</label>
+    <div class="row"><input type="text" id="teamName" name="team" maxlength="40" autocomplete="off" placeholder="Например, «Серые шляпы»"><button class="btn" id="startBtn">Открыть дело</button></div>
+  </section>
+
+  <div id="main" hidden>
+    <nav class="tabs" role="tablist" aria-label="Разделы дела" id="tabs">
+      <button role="tab" id="t-search" aria-controls="p-search" data-tab="search" aria-selected="true">Запрос</button>
+      <button role="tab" id="t-dir" aria-controls="p-dir" data-tab="dir" aria-selected="false" tabindex="-1">Справочник</button>
+      <button role="tab" id="t-show" aria-controls="p-show" data-tab="show" aria-selected="false" tabindex="-1">Предъявить</button>
+      <button role="tab" id="t-warrant" aria-controls="p-warrant" data-tab="warrant" aria-selected="false" tabindex="-1">Ордер</button>
+      <button role="tab" id="t-found" aria-controls="p-found" data-tab="found" aria-selected="false" tabindex="-1">Найденное</button>
+      <button role="tab" id="t-history" aria-controls="p-history" data-tab="history" aria-selected="false" tabindex="-1">История</button>
+      <button role="tab" id="t-answers" aria-controls="p-answers" data-tab="answers" aria-selected="false" tabindex="-1">Ответы</button>
+    </nav>
+
+    <section class="sheet" role="tabpanel" aria-labelledby="t-search" id="p-search">
+      <div class="label">Адрес или картотека</div>
+      <div class="row"><input type="text" id="q" name="query" aria-label="Адрес или картотека" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Например: П-12 или В-44/Имя Фамилия…"><button class="btn" id="goBtn" type="submit">Найти</button></div>
+      <details>
+        <summary>Как делать запрос</summary>
+        <ul class="hint">
+          <li>Адрес пишется как район и номер: <b>Ц-21</b>, <b>Ю-40</b>, <b>П-12</b>.</li>
+          <li>В больницу, морг, ЗАГС, мэрию, полицейский архив и другие картотеки добавляйте после «/» имя и фамилию или адрес: <b>В-44/Имя Фамилия</b>, <b>Ц-30/З-17</b>.</li>
+          <li>Телефонная станция принимает номер: <b>Ц-48/12345</b>.</li>
+          <li>Найденное приложение можно сразу открыть на экране. Бумажный экземпляр принесёт раннер.</li>
+        </ul>
+      </details>
+      <div class="foldbar" data-for="out"><button type="button" class="mini" data-fold="close">Свернуть всё</button><button type="button" class="mini" data-fold="open">Развернуть всё</button></div>
+      <div id="out" aria-live="polite"></div>
+    </section>
+
+        <section class="sheet" role="tabpanel" aria-labelledby="t-dir" id="p-dir" hidden>
+      <div class="label">Справочник Фэрхейвена, 1956</div>
+      <p class="hint">Нажмите на адрес, и он окажется в строке запроса. Район пишется буквой: Ц центр, С север, Ю юг, В восток, З запад, П порт.</p>
+      <div class="row"><input type="text" id="dq" name="dir-search" aria-label="Поиск по справочнику" autocomplete="off" spellcheck="false" placeholder="Найти человека, место или адрес…"><button class="btn alt" id="dClear" type="button">Очистить поиск</button></div>
+      <div id="dirBody"></div>
+    </section>
+
+<section class="sheet" role="tabpanel" aria-labelledby="t-show" id="p-show" hidden>
+      <div class="label">Предъявить улику человеку</div>
+      <p class="hint">Выберите человека, с которым вы уже говорили, и приложение, которое у вас есть.</p>
+      <label class="label" for="shP">Кому</label><select id="shP"></select>
+      <label class="label" for="shI">Что</label><select id="shI"></select>
+      <div class="row"><button class="btn" id="shBtn">Предъявить</button></div>
+      <div id="shOut" aria-live="polite"></div>
+    </section>
+
+    <section class="sheet" role="tabpanel" aria-labelledby="t-warrant" id="p-warrant" hidden>
+      <div class="label">Запрос ордера на обыск</div>
+      <p class="hint">Судья Мортон подписывает ордер, если улики указывают на этот адрес. Отметьте приложения, на которые вы опираетесь.</p>
+      <label class="label" for="wA">Адрес</label>
+      <input type="text" id="wA" name="warrant-address" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Например: Ю-61">
+      <div class="label">Основания</div>
+      <div id="wList"></div>
+      <div class="row"><button class="btn" id="wBtn">Подать на подпись</button></div>
+      <div id="wOut" aria-live="polite"></div>
+    </section>
+
+    <section class="sheet" role="tabpanel" aria-labelledby="t-found" id="p-found" hidden>
+      <div class="label">Приложения команды</div>
+      <ul class="apps" id="fApps"></ul>
+    </section>
+
+    <section class="sheet" role="tabpanel" aria-labelledby="t-history" id="p-history" hidden>
+      <div class="label">История поездок и запросов</div>
+      <div class="row"><input type="text" id="hq" name="history-search" aria-label="Поиск по истории" autocomplete="off" spellcheck="false" placeholder="Поиск по истории: адрес, имя, слово…"><button class="btn alt" id="hClear" type="button">Очистить поиск</button></div>
+      <div class="label">Где вы уже были</div>
+      <div class="chips" id="hChips"></div>
+      <div class="foldbar" data-for="fLog"><button type="button" class="mini" data-fold="close">Свернуть всё</button><button type="button" class="mini" data-fold="open">Развернуть всё</button><span class="hint" id="hCount"></span></div>
+      <div id="fLog"></div>
+    </section>
+
+    <section class="sheet" role="tabpanel" aria-labelledby="t-answers" id="p-answers" hidden>
+      <div class="label">Заключение следствия</div>
+      <p class="hint">Впишите ответы своими словами. Сдать можно один раз. За каждый верный ответ команда получает один балл.</p>
+      <div id="ansForm"></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span>Фэрхейвен, 1956. Прототип дела №1.</span>
+    <button id="resetLink" type="button">Служебное</button>
+    <span id="resetBox" hidden><input type="text" id="resetCode" name="host-code" aria-label="Код ведущего" autocomplete="off" placeholder="Код ведущего" style="max-width:160px;padding:4px 8px;font-size:14px"> <button id="resetGo" type="button">Сбросить игру</button></span>
+  </div>
+</div>
+
+<script>
+/* ============ ДАННЫЕ ДЕЛА ============ */
+const APPS = {
+  1:'Фото места происшествия (контора склада №4)',
+  2:'Заключение коронера (Э. Рэйн)',
+  3:'Рабочая тетрадь Э. Рэйн',
+  4:'Журнал смен склада №4',
+  5:'Протокол о драке в «Таверне Дойла»',
+  6:'Журнал покупателей оружия, ломбард «Золотой Якорь»',
+  7:'Книга заказов химчистки «Белая Лилия»',
+  8:'Медицинская карта Д. Рэйна',
+  9:'Рапорт полиции и баллистика',
+  10:'Фото револьвера',
+  11:'Накладные из дома З-17'
+};
+
+const ENTRIES = [
+ {a:'П-12',q:null,title:'Склад №4 «Харлоу Фрейт»',apps:[1,3],
+  t:`Контора над основным залом. Тело уже увезли. На столе раскрытые гроссбухи, горит настольная лампа. Под лампой лежит рабочая тетрадь Эвелин с пометками: патрульный передал её вам. Дверь конторы цела, замок не взломан. Ключи есть у Эвелин, у начальника склада Фрэнка Мэддокса и у владелицы компании Лилиан Харлоу.\nВнизу у ворот №2 находится погрузочная рампа.`},
+ {a:'П-12',q:['рампа','ворота'],title:'Погрузочная рампа',
+  t:`Бетон у ворот №2. Полицейские нашли здесь тёмные пятна, наполовину смытые ночной моросью, и две борозды от каблуков. Борозды ведут к лестнице в контору. В самой конторе следов борьбы нет.`},
+ {a:'Ц-12',q:null,title:'Контора «Харлоу Фрейт»',
+  t:`Приёмная в центре города. Секретарь Дора Кент вытирает глаза платком и ждёт ваших вопросов.\nУкажите её имя: Ц-12/Имя Фамилия.`,hint:true},
+ {a:'Ц-12',q:['кент','дора'],who:'Дора Кент',title:'Дора Кент, секретарь',apps:[4],
+  t:`«Эвелин была самой честной женщиной, которую я знала. В последние недели она задерживалась каждый вечер и сверяла накладные. В понедельник в четыре часа она поссорилась с миссис Харлоу. Эвелин требовала внутренний аудит. Миссис Харлоу ответила, что сейчас не время, в городе выборы и газеты. В шесть миссис Харлоу уехала на бал Лиги благотворительности.\nПосле этого Эвелин попросила меня соединить её с налоговой инспекцией. Я набрала 7-3318, но там уже никого не было. Она сказала: «Позвоню утром, Дора».\nВот журнал смен склада. Эвелин просила приготовить копию.»`},
+ {a:'Ц-12',q:['мэддокс','фрэнк'],title:'Фрэнк Мэддокс, со слов секретаря',
+  t:`«Мистер Мэддокс тринадцать лет начальник склада. Надёжный человек. В последнее время нервничал: Эвелин требовала у него журналы смен и накладные. Но он всегда был вежлив.»`},
+ {a:'Ц-48',q:null,title:'Телефонная станция',hint:true,
+  t:`Оператор ждёт номер. Формат запроса: Ц-48/номер.`},
+ {a:'Ц-48',q:['73318'],title:'Номер 7-3318',
+  t:`Окружная налоговая инспекция, отдел по делам перевозчиков. Абонент: Эдвард Лоури, адрес Ц-70.`},
+ {a:'Ц-70',q:null,who:'Эдвард Лоури',title:'Окружная налоговая инспекция',
+  t:`Эдвард Лоури, инспектор. «Мисс Рэйн звонила мне в понедельник днём. Назначили встречу на вторник, девять утра. Она сказала, что накопила документы о расхождениях в накладных „Харлоу Фрейт“ с сентября. Имён не называла. Сказала только: „Это не воровство со стороны, это кто-то свой“.»`},
+ {a:'Ц-21',q:null,who:'Лейтенант Гарленд',title:'Главное управление полиции',apps:[9,10],
+  t:`Лейтенант Рой Гарленд ведёт дело. «Один выстрел в грудь, смерть наступила между десятью вечера и полуночью. Револьвер Colt Police Positive калибра .32 нашли утром во вторник в мусорном баке у дома Ю-61. Там живёт брат убитой, Дэнни Рэйн. Нам позвонили из автомата в порту. Серийный номер читается. Отпечатков нет.\nМэддокс, начальник склада, заявил нам, что весь вечер провёл в „Таверне Дойла“ и ушёл только на закрытии.»`},
+ {a:'С-58',q:null,title:'Полицейский архив',hint:true,
+  t:`Архивариус ждёт запрос. Формат: С-58/Имя Фамилия.`},
+ {a:'С-58',q:['дэнни'],title:'Рэйн, Дэнни',t:`Две драки (1954, 1955). Задолженность: расписка ростовщику Винсу Карузо на 800 долларов. Обвинений в оружии нет.`},
+ {a:'С-58',q:['томми','грейс'],title:'Грейс, Томми',t:`Мелкие кражи на складах, 1955 год, условно. Уволен из «Харлоу Фрейт» в пятницу 2 ноября.`},
+ {a:'С-58',q:['мэддокс'],title:'Мэддокс, Фрэнк',t:`Приводов нет. Водительское удостоверение с 1938 года. На него записан тёмно-зелёный Packard Clipper 1955 года.`},
+ {a:'С-58',q:['харлоу','лилиан'],title:'Харлоу, Лилиан',t:`Записей нет, если не считать нескольких штрафов за парковку.`},
+ {a:'С-58',q:['карузо','винс'],title:'Карузо, Винс',t:`Ростовщичество, давление на должников, но ни одного обвинения не дошло до суда. Любит ужинать в собственном ресторане (Ц-61).`},
+ {a:'С-58',q:['бэрроу','ной'],title:'Бэрроу, Ной',t:`Чист. В октябре награждён мэром за тридцать лет службы.`},
+ {a:'С-58',q:['эвелин'],title:'Рэйн, Эвелин',t:`Записей нет. Ни штрафов, ни жалоб.`},
+ {a:'Ю-33',q:null,title:'Участок №2',apps:[5],
+  t:`Дежурный сержант находит нужную папку. В понедельник в 21:30 в «Таверне Дойла» подрались двое, Томми Грейс и Дэнни Рэйн. Наряд прибыл в 21:45. Грейса задержали и держали до утра. Рэйна с переломом руки в 21:55 отвезли в клинику Св. Стефана. Свидетелей драки записали. Среди них Фрэнк Мэддокс, начальник склада: его показания взяты в 21:55.`},
+ {a:'Ю-40',q:null,who:'Макс Холлис',title:'Таверна Дойла',
+  t:`Бармен Макс Холлис вытирает стойку. «Драка была вчера в половине десятого. Томми Грейс кричал, что Эвелин Рэйн сломала ему жизнь, а Дэнни, её брат, полез в бой. Приехала полиция, всех переписали.\nФрэнк Мэддокс сидел у стойки с восьми тридцати. Когда полиция записала его показания, он сказал, что выйдет за сигаретами, и вышел около десяти. Вернулся примерно в двадцать минут двенадцатого. Ботинки в грязи, на улице моросило. Он ничего не сказал, взял виски и сел на то же место. Я ещё подумал, что за сигаретами так долго не ходят.»`},
+ {a:'Ю-61',q:null,who:'Дэнни Рэйн',title:'Квартира Дэнни Рэйна',
+  t:`Дэнни Рэйн с гипсом на правой руке открывает дверь. Глаза красные. «Эви единственная давала мне деньги. Я должен Карузо. Но я не брал револьвер и не прятал его. Вчера Томми сказал, что она его уничтожила, я не выдержал и ударил. Потом клиника. Спросите врачей.»`},
+ {a:'В-44',q:null,title:'Клиника Св. Стефана',hint:true,t:`Регистратура ждёт запрос. Формат: В-44/Имя Фамилия.`},
+ {a:'В-44',q:['дэнни'],title:'Рэйн, Дэнни',apps:[8],t:`Медсестра находит карту. Закрытый перелом пястной кости правой руки. Поступил в 21:58 в сопровождении патрульного. Гипс наложен к 22:40, выписан в 23:30.`},
+ {a:'В-44',q:['эвелин'],title:'Рэйн, Эвелин',t:`Старая карточка: снотворное. Последний визит два года назад.`},
+ {a:'Ю-38',q:null,title:'Центр судебной медицины',hint:true,t:`Коронер Ирвинг Хейл ждёт имя. Формат: Ю-38/Имя Фамилия.`},
+ {a:'Ю-38',q:['эвелин','рэйн'],who:'Ирвинг Хейл',title:'Рэйн, Эвелин',apps:[2],
+  t:`«Один выстрел в грудь с расстояния около метра. Калибр .32. Время смерти между десятью вечера и полуночью. Обратите внимание: крови на одежде мало для такой раны, а на каблуках стёрты носки. Её переместили после смерти. На подошвах и в волосах следы мешковины и портового мазута. В конторе мешковины нет.»`},
+ {a:'С-29',q:null,who:'Фрэнк Мэддокс',title:'Квартира Фрэнка Мэддокса',
+  t:`Фрэнк Мэддокс, крепкий мужчина лет сорока, сдержан и вежлив. «Эвелин была толковым бухгалтером, мне жаль. В понедельник я ушёл со склада в восемь, пошёл в „Таверну Дойла“ и просидел там до закрытия. Спросите кого хотите. Револьверов я не покупаю.»`},
+ {a:'Ц-30',q:null,title:'Мэрия',hint:true,t:`Клерк ждёт адрес объекта. Формат: Ц-30/адрес, например Ц-30/П-12.`},
+ {a:'Ц-30',q:['з17'],title:'Объект З-17',t:`Одноэтажный дом. Собственница Анна Мэддокс (урожд. Хиллман), умерла 14.09.1956. По завещанию дом перешёл сыну, Фрэнку Мэддоксу. С сентября пустует.`},
+ {a:'Ц-30',q:['с29'],title:'Объект С-29',t:`Многоквартирный дом. Квартира 3: наниматель Фрэнк Мэддокс, с 1949 года.`},
+ {a:'Ц-30',q:['п12'],title:'Объект П-12',t:`Склад №4. Арендатор: «Харлоу Фрейт», владелица Лилиан Харлоу.`},
+ {a:'Ц-30',q:['п19'],title:'Объект П-19',t:`Ломбард «Золотой Якорь». Лицензия на торговлю оружием выдана Сэму Бикману.`},
+ {a:'Ц-33',q:null,title:'ЗАГС',hint:true,t:`Клерк ждёт имя. Формат: Ц-33/Имя Фамилия.`},
+ {a:'Ц-33',q:['хиллман','анна'],title:'Мэддокс Анна, урождённая Хиллман',t:`Свидетельство о смерти: 71 год, умерла 14 сентября 1956. Заявитель: сын, Фрэнк Мэддокс. Фамилия до замужества: Хиллман.`},
+ {a:'Ц-33',q:['мэддокс','фрэнк'],title:'Мэддокс, Фрэнк',t:`Родился в 1913 году. Мать: Анна Хиллман. Отец умер в 1940 году.`},
+ {a:'Ц-33',q:['эвелин','рэйн'],title:'Рэйн, Эвелин',t:`Родилась в 1924 году. Не замужем. Брат: Дэнни.`},
+ {a:'П-19',q:null,who:'Сэм Бикман',title:'Ломбард «Золотой Якорь»',
+  t:`Сэм Бикман за прилавком. «С первого октября закон обязывает записывать покупателей оружия. Журнал есть, но показывать его без причины я не стану. Принесёте что-нибудь, что связано с оружием, и мы поговорим.»`},
+ {a:'С-77',q:null,who:'Хозяин «Трёх шаров»',title:'Ломбард «Три шара»',
+  t:`Хозяин сверяет номер 618204 по своей книге. «Нет, не мой. Мы такими револьверами не торгуем. Попробуйте на Портовой, у Бикмана.»`},
+ {a:'Ю-27',q:null,who:'Рита Донахью',title:'Химчистка «Белая Лилия»',apps:[7],
+  t:`Рита Донахью достаёт книгу заказов за вторник. «Срочные принимаем до полуночи, как в рекламе. Сегодня с утра было восемь заказов. Некоторые клиенты платят сразу и адреса не оставляют, остальным доставляем.»`},
+ {a:'П-3',q:null,who:'Ной Бэрроу',title:'Дом Ноя Бэрроу',
+  t:`Ной Бэрроу пьёт кофе, руки дрожат. «Я заступил в восемь. Мэддокс расписался на выходе в 20:05, у главных ворот. Эвелин осталась. Свет в конторе горел всю ночь. Около без десяти одиннадцать у рампы хлопнуло, я подумал, что мотор стреляет. Видел, как с территории выезжала тёмно-зелёная машина без фар. Ворота №2 открываются ключом начальника склада или моим. Я ничего не открывал.»`},
+ {a:'П-27',q:null,who:'Томми Грейс',title:'Квартира Томми Грейса',
+  t:`Томми Грейс небрит, глаза злые. «Меня выпустили утром. В пятницу Эвелин уволила меня за кражу. Я взял пару ящиков с нашими же ярлыками, но пропадало другое, и не мной. Вчера я пошёл в бар, выпил и сорвался. Дэнни получил за сестру. Остальное я проспал в участке.»`},
+ {a:'В-10',q:null,who:'Лилиан Харлоу',title:'Особняк Лилиан Харлоу',
+  t:`Лилиан Харлоу сдержанна. «Да, мы поссорились. Эвелин хотела аудит, а у нас выборы, газеты. Я отказала. Не думала, что она так упорна. После работы я поехала на бал Лиги и вернулась после полуночи. Об убийстве узнала от Доры утром.»`},
+ {a:'В-60',q:null,title:'Рэдклиф-холл, Лига благотворительности',hint:true,t:`Распорядитель ждёт имя гостя. Формат: В-60/Имя Фамилия.`},
+ {a:'В-60',q:['харлоу','лилиан'],title:'Гостевая книга бала',t:`Лилиан Харлоу прибыла в 19:35, уехала в 23:50 вместе с супругой мэра. За вечер её видели десятки гостей.`},
+ {a:'С-15',q:null,who:'Нэнси Фрост',title:'Квартира Нэнси Фрост',
+  t:`Нэнси Фрост, подруга Эвелин и соседка. «Эви в понедельник сказала, что задержится: надо сверить накладные до встречи с налоговым инспектором. Она боялась кого-то на складе, но имени не называла. Сказала только: „Человек, которому я доверяла“.»`},
+ {a:'С-14',q:null,title:'Квартира Эвелин Рэйн',
+  t:`Всё аккуратно. На календаре на стене красным обведено: «Вт, 9:00 — Лоури». Никаких следов обыска. Постель не тронута.`},
+ {a:'Ц-61',q:null,who:'Винс Карузо',title:'Ресторан Карузо',
+  t:`Винс Карузо ужинает. «Дэнни мне должен восемьсот, да. Но сестра платила за него, и я не трогал бы такого клиента. Если бы я убил её, я оставил бы револьвер у себя. Мне рассказали, что звонок в полицию был из автомата возле порта, голос мужской, около семи утра.»`},
+ {a:'Ц-55',q:null,who:'Уолт Чендлер',title:'Редакция «Фэрхейвен Курьер»',
+  t:`Журналист Уолт Чендлер. «Хищения в порту я освещаю с сентября. Один из моих источников, сторож Ной Бэрроу. Он давно говорил, что воруют свои, и всегда по ночам. Сверьте, кто стоял на сменах.»`},
+ {a:'Ю-51',q:null,title:'Городской архив',hint:true,t:`Архивариус ждёт тему. Формат: Ю-51/тема. Здесь можно найти историю компаний и городских событий.`},
+ {a:'Ю-51',q:['харлоу','фрейт'],title:'История «Харлоу Фрейт»',t:`Основана в 1938 году Робертом Харлоу, перевозки по реке и морю. После его смерти в 1953 компанией владеет вдова, Лилиан Харлоу. Склады №1–4 в порту.`}
+];
+
+/* Реакции на предъявленные улики: человек | приложение */
+const SHOWS = [
+ {p:'Сэм Бикман',i:10,give:[6],t:`Бикман берёт снимок и сверяет номер 618204 со своей книгой. «Мой. Продал двадцать девятого октября, наличными. Покупатель назвался Хиллманом. Вот страница журнала.»`},
+ {p:'Фрэнк Мэддокс',i:6,t:`Мэддокс бледнеет. «Хиллман — фамилия моей матери. Дом З-17 был её. Любой мог назваться её именем. Я не покупал револьвер.»`},
+ {p:'Фрэнк Мэддокс',i:7,t:`Мэддокс отводит глаза. «Плащ я отдавал в чистку, потому что опрокинул кофе. Это не преступление.»`},
+ {p:'Фрэнк Мэддокс',i:4,t:`«Да, я стоял на сменах. Я начальник склада. Это моя работа. Хотите обвинить меня в том, что воровали на моих дежурствах? Воровал любой, у кого были ключи.»`},
+ {p:'Фрэнк Мэддокс',i:5,t:`«Меня записали в 21:55. Я свидетель драки. Это ничего не доказывает.»`},
+ {p:'Фрэнк Мэддокс',i:3,t:`Мэддокс листает тетрадь. «Эвелин всё записывала, это её дело. Я не знаю, что она вообразила.»`},
+ {p:'Фрэнк Мэддокс',i:10,t:`«Впервые вижу. Револьвер нашли у брата, так ищите у него.»`},
+ {p:'Дэнни Рэйн',i:10,t:`Дэнни качает головой. «Никогда его не видел. Мне подбросили, больше нечего думать.»`},
+ {p:'Дэнни Рэйн',i:8,t:`«Да, доктор вправил руку. Я был в клинике, пока она...»`},
+ {p:'Томми Грейс',i:4,t:`Томми ухмыляется. «Видите? Ящики пропадали в ночи, когда дежурил Мэддокс. Меня он поставил только на два дежурства из шести. Меня выбрали козлом отпущения.»`},
+ {p:'Лилиан Харлоу',i:3,t:`Лилиан листает тетрадь, и лицо её каменеет. «Эвелин всё это записала? Я не знала, что расхождений так много. Если бы я согласилась на аудит...»`},
+ {p:'Нэнси Фрост',i:3,t:`Нэнси узнаёт почерк. «Это Эвины пометки. Она называла цифры так: „шесть ночей, шесть расхождений“.»`},
+ {p:'Макс Холлис',i:5,t:`«Протокол — формальность. Он ушёл после того, как его записали. Я это видел.»`},
+ {p:'Ной Бэрроу',i:4,t:`Бэрроу ведёт пальцем по строкам. «Ночь на четырнадцатое сентября, на двадцать восьмое... Это всё дежурства Мэддокса. Не знал, что их записали. Он ездил на рампу в эти ночи.»`}
+];
+
+/* Ордера */
+const WARRANTS = [
+ {a:'З-17',any:[6,7],give:[11],
+  ok:`Судья Мортон подписывает ордер. Дом З-17 пуст с сентября. В кухонном шкафу стопка накладных «Харлоу Фрейт»: на каждой подпись Эвелин Рэйн, выполненная одной и той же рукой. Рядом пустая коробка от патронов .32, в ней не хватает двух штук.`},
+ {a:'С-29',any:[6,7],
+  ok:`Судья Мортон подписывает ордер. В квартире чисто. На гвозде в прихожей ключи от Packard. В гараже тёмно-зелёная машина, на колёсах свежая грязь с портовой дороги. Плаща нет.`}
+];
+
+const APX = {
+1:"<section class=\"page paper-grey\">\n  <div class=\"form-h\" style=\"margin-top:8mm\"><div class=\"a\">Полицейская фотолаборатория<\/div><div class=\"b\">Фотография места происшествия<\/div><\/div>\n  <div class=\"photo\"><svg viewBox=\"0 0 420 300\" role=\"img\" aria-label=\"Контора склада, тело обведено мелом\">\n    <defs><filter id=\"g1\"><feTurbulence type=\"fractalNoise\" baseFrequency=\".85\" numOctaves=\"2\" seed=\"4\"/><feColorMatrix type=\"saturate\" values=\"0\"/><\/filter>\n    <radialGradient id=\"l1\" cx=\".62\" cy=\".28\" r=\".9\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#000\" stop-opacity=\".55\"/><\/radialGradient><\/defs>\n    <rect width=\"420\" height=\"300\" fill=\"#8e8c86\"/>\n    <rect y=\"170\" width=\"420\" height=\"130\" fill=\"#6b6a65\"/>\n    <path d=\"M0 170H420\" stroke=\"#44433f\" stroke-width=\"3\"/>\n    <rect x=\"22\" y=\"22\" width=\"86\" height=\"104\" fill=\"#a6a49e\" stroke=\"#44433f\" stroke-width=\"3\"/><path d=\"M65 22V126M22 74H108\" stroke=\"#44433f\" stroke-width=\"2\"/>\n    <g stroke=\"#44433f\" stroke-width=\"2.4\"><path d=\"M318 170V40h70v130\"/><\/g>\n    <rect x=\"322\" y=\"46\" width=\"62\" height=\"118\" fill=\"#7d7b75\"/><path d=\"M335 60H372M335 76H372M335 92H372M335 108H372\" stroke=\"#55534e\" stroke-width=\"3\"/>\n    <path d=\"M118 150H292L318 196H92Z\" fill=\"#4a3f33\" stroke=\"#25201a\" stroke-width=\"3\"/>\n    <rect x=\"98\" y=\"196\" width=\"14\" height=\"70\" fill=\"#3a3028\"/><rect x=\"298\" y=\"196\" width=\"14\" height=\"70\" fill=\"#3a3028\"/>\n    <rect x=\"132\" y=\"130\" width=\"46\" height=\"20\" fill=\"#d9d4c6\" stroke=\"#2c2924\" stroke-width=\"2\"/><rect x=\"186\" y=\"134\" width=\"40\" height=\"16\" fill=\"#c2bcab\" stroke=\"#2c2924\" stroke-width=\"2\"/>\n    <path d=\"M246 150L252 118L270 112L274 150Z\" fill=\"#1d1a15\"/><path d=\"M236 150h44\" stroke=\"#111\" stroke-width=\"5\"/><ellipse cx=\"258\" cy=\"112\" rx=\"22\" ry=\"8\" fill=\"#f4e7b0\" opacity=\".9\"/>\n    <path d=\"M52 220L96 232L130 214L224 236L318 224L372 252L300 270L160 268L60 262Z\" fill=\"none\" stroke=\"#f4f0e6\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-dasharray=\"1 0\"/>\n    <circle cx=\"60\" cy=\"246\" r=\"9\" fill=\"none\" stroke=\"#f4f0e6\" stroke-width=\"3\"/>\n    <path d=\"M70 244L124 238M124 238L166 224M124 238L164 258M170 236L260 246M260 246L336 238M260 246L330 262\" stroke=\"#f4f0e6\" stroke-width=\"3\" fill=\"none\"/>\n    <g font-family=\"Oswald\" font-size=\"13\" fill=\"#111\"><rect x=\"186\" y=\"204\" width=\"16\" height=\"16\" fill=\"#e9c14a\" stroke=\"#111\"/><text x=\"190\" y=\"217\">1<\/text><rect x=\"320\" y=\"244\" width=\"16\" height=\"16\" fill=\"#e9c14a\" stroke=\"#111\"/><text x=\"324\" y=\"257\">2<\/text><\/g>\n    <rect width=\"420\" height=\"300\" fill=\"url(#l1)\"/>\n    <rect width=\"420\" height=\"300\" filter=\"url(#g1)\" opacity=\".22\"/>\n    <text x=\"10\" y=\"290\" font-family=\"IBM Plex Mono\" font-size=\"10\" fill=\"#f4f0e6\">06.11.56  06:40<\/text><\/svg><\/div>\n  <div class=\"cap\">Склад №4 «Харлоу Фрейт», контора на втором ярусе. Тело обведено мелом.<br>Метки: <b>1<\/b> — настольная лампа и раскрытые гроссбухи, <b>2<\/b> — положение ног. Дверь и замок не повреждены. Оружие на месте не найдено.<\/div>\n  <div class=\"foot\"><span>Снимок №1 из 6<\/span><span>Фотограф: сержант Л. Брукс<\/span><\/div>\n<\/section>",
+2:"<section class=\"page paper-green\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Центр судебной медицины Фэрхейвена · Ю-38<\/div><div class=\"b\">Заключение коронера<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Имя<\/div><div class=\"v\">Рэйн, Эвелин<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Возраст / пол<\/div><div class=\"v\">32 года, женщина<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Доставлена<\/div><div class=\"v\">6 ноября 1956, 07:55, из склада №4 (П-12)<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Вскрытие<\/div><div class=\"v\">6 ноября 1956, 09:30. Коронер И. Хейл<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Причина смерти<\/div><div class=\"v\">Огнестрельное ранение грудной клетки, пуля калибра .32. Повреждены сердце и лёгкое. Выстрел произведён с расстояния около одного метра, спереди.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Время смерти<\/div><div class=\"v\">Между 22:00 и 24:00, 5 ноября<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Последний приём пищи<\/div><div class=\"v\">Бутерброд и кофе, около 19:30<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Следы борьбы<\/div><div class=\"v\">Не обнаружены. Ссадин на руках нет.<\/div><\/div>\n  <p class=\"ind sm\" style=\"margin-top:3mm\"><b>Наблюдения.<\/b> 1) Кровопотеря в месте обнаружения тела несоразмерна ране: на одежде и на полу конторы крови мало. 2) На каблуках обуви стёрты носки и торцы. 3) На подошвах и в волосах обнаружены волокна мешковины и густой портовой мазут. По сообщению сержанта Брукса, в конторе мешковины и мазута нет. 4) Положение трупа не соответствует траектории ранения.<\/p>\n  <p class=\"ind sm\"><b>Заключение.<\/b> Смерть насильственная. После наступления смерти тело было перемещено. Место убийства отличается от места обнаружения.<\/p>\n  <div style=\"margin-top:6mm\" class=\"hand-m\">И. Хейл, коронер<\/div>\n  <div class=\"foot\"><span>Копия для полицейского управления<\/span><span>№ 1956-11-0412<\/span><\/div>\n<\/section>",
+3:"<section class=\"page paper-lined\">\n  <div class=\"hand\" style=\"font-size:18pt;margin:6mm 0 2mm\">Накладные: расхождения (осень)<\/div>\n  <table class=\"hand\" style=\"font-size:12.5pt;border-color:#1f2f58\">\n    <tr><th style=\"font-family:Oswald\">Дата ночи<\/th><th>№ накл.<\/th><th>По накладной<\/th><th>Принято<\/th><\/tr>\n    <tr><td>14 сен<\/td><td>4417<\/td><td>табак, 40 ящ.<\/td><td>28 ящ.<\/td><\/tr>\n    <tr><td>28 сен<\/td><td>4502<\/td><td>ткань, 30 рул.<\/td><td>21 рул.<\/td><\/tr>\n    <tr><td>5 окт<\/td><td>4561<\/td><td>лекарства, 25 ящ.<\/td><td>17 ящ.<\/td><\/tr>\n    <tr><td>12 окт<\/td><td>4604<\/td><td>табак, 36 ящ.<\/td><td>24 ящ.<\/td><\/tr>\n    <tr><td>19 окт<\/td><td>4660<\/td><td>ткань, 28 рул.<\/td><td>20 рул.<\/td><\/tr>\n    <tr><td>26 окт<\/td><td>4711<\/td><td>лекарства, 30 ящ.<\/td><td>19 ящ.<\/td><\/tr>\n  <\/table>\n  <div class=\"hand\" style=\"margin-top:4mm\">Шесть ночей, шесть недостач. Не случайность.<br>Подписи приёмки на накладных — мои?? Я их не ставила. Сверить почерк.<br>Кто был в смене? Сверить журнал смен.<br>Л. отказала в аудите. Звонить налоговому: 7-3318. Вт, 9:00.<\/div>\n  <div class=\"hand\" style=\"margin-top:3mm;font-size:12pt;opacity:.85\">Д. — не давать денег в долг в этом месяце.<\/div>\n  <div class=\"foot\"><span>Рабочая тетрадь Э. Рэйн<\/span><span>Заметки, ноябрь 1956<\/span><\/div>\n<\/section>",
+4:"<section class=\"page paper-manila\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">«Харлоу Фрейт» · склад №4<\/div><div class=\"b\">Журнал ночных смен<\/div><div class=\"a\" style=\"letter-spacing:.1em\">Сентябрь — октябрь 1956<\/div><\/div>\n  <table class=\"sm\" style=\"font-size:8.4pt\">\n    <tr><th>Дата<\/th><th>Начальник смены<\/th><th>Грузчики<\/th><th>Приёмку принял<\/th><\/tr>\n    <tr><td>14.09<\/td><td>Ф. Мэддокс<\/td><td>Грейс, Лукас<\/td><td>Мэддокс<\/td><\/tr>\n    <tr><td>17.09<\/td><td>Дж. Кросс<\/td><td>Грейс, Нолан<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>21.09<\/td><td>Дж. Кросс<\/td><td>Лукас, Нолан<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>28.09<\/td><td>Ф. Мэддокс<\/td><td>Лукас, Пирс<\/td><td>Мэддокс<\/td><\/tr>\n    <tr><td>01.10<\/td><td>Дж. Кросс<\/td><td>Грейс, Пирс<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>05.10<\/td><td>Ф. Мэддокс<\/td><td>Грейс, Нолан<\/td><td>Мэддокс<\/td><\/tr>\n    <tr><td>08.10<\/td><td>Дж. Кросс<\/td><td>Лукас, Нолан<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>12.10<\/td><td>Ф. Мэддокс<\/td><td>Лукас, Пирс<\/td><td>Мэддокс<\/td><\/tr>\n    <tr><td>15.10<\/td><td>Дж. Кросс<\/td><td>Нолан, Пирс<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>19.10<\/td><td>Ф. Мэддокс<\/td><td>Лукас, Нолан<\/td><td>Мэддокс<\/td><\/tr>\n    <tr><td>23.10<\/td><td>Дж. Кросс<\/td><td>Грейс, Лукас<\/td><td>Кросс<\/td><\/tr>\n    <tr><td>26.10<\/td><td>Ф. Мэддокс<\/td><td>Пирс, Нолан<\/td><td>Мэддокс<\/td><\/tr>\n  <\/table>\n  <p class=\"sm\" style=\"margin-top:3mm\">Сторож на всех ночных сменах: Н. Бэрроу, с 20:00 до 06:00.<br>Ворота №2 (рампа): ключи у начальника склада и сторожа.<\/p>\n  <div class=\"foot\"><span>Копия для главбуха Э. Рэйн<\/span><span>Подготовила Д. Кент<\/span><\/div>\n<\/section>",
+5:"<section class=\"page paper-white\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Полиция Фэрхейвена · Участок №2 (Ю-33)<\/div><div class=\"b\">Протокол о происшествии<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Дата и время<\/div><div class=\"v\">5 ноября 1956, вызов 21:35, прибытие наряда 21:45<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Место<\/div><div class=\"v\">«Таверна Дойла», Ю-40<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Суть<\/div><div class=\"v\">Драка между двумя посетителями в зале. Разбиты стулья и две бутылки.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Участники<\/div><div class=\"v\">Грейс Томми, 27 лет (задержан в 21:45, содержится до утра)<br>Рэйн Дэниел, 29 лет (травма правой руки, в 21:55 доставлен патрульной машиной №7 в клинику Св. Стефана)<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Свидетели<\/div><div class=\"v\">Холлис Макс, бармен<br>Прайс Лу, посетитель<br>Мэддокс Фрэнк, начальник склада «Харлоу Фрейт»: показания в 21:55, заявил, что находился в заведении с 20:30<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Причина<\/div><div class=\"v\">Ссора из-за увольнения Грейса с работы. Рэйн вступился за сестру.<\/div><\/div>\n  <p class=\"sm\" style=\"margin-top:3mm\">Показания свидетелей записаны, претензий потерпевшие не заявили. Рэйн отпущен на лечение. Дело передано в журнал происшествий.<\/p>\n  <div style=\"margin-top:5mm\" class=\"hand-m\">Сержант Т. Бреннер, дежурный<\/div>\n  <div class=\"foot\"><span>Копия для лейтенанта Гарленда<\/span><span>№ У2-1105/3<\/span><\/div>\n<\/section>",
+6:"<section class=\"page paper-manila\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Ломбард «Золотой Якорь» · П-19<\/div><div class=\"b\">Журнал продажи оружия<\/div><div class=\"a\" style=\"letter-spacing:.1em\">Согласно постановлению совета от 1 октября<\/div><\/div>\n  <table style=\"font-size:7.6pt\">\n    <tr><th>Дата<\/th><th>Предмет<\/th><th>Сер. №<\/th><th>Покупатель<\/th><th>Адрес<\/th><th>Оплата<\/th><\/tr>\n    <tr><td>03.10<\/td><td>S&amp;W .38<\/td><td>2210945<\/td><td>Дж. Роудс<\/td><td>В-52<\/td><td>нал.<\/td><\/tr>\n    <tr><td>11.10<\/td><td>Винтовка Winchester .22<\/td><td>A55012<\/td><td>А. Чэпмен<\/td><td>Ю-90<\/td><td>нал.<\/td><\/tr>\n    <tr><td>15.10<\/td><td>Дробовик 12 кал.<\/td><td>770314<\/td><td>Б. Уитакер<\/td><td>С-73<\/td><td>чек<\/td><\/tr>\n    <tr><td>22.10<\/td><td>H&amp;R .32<\/td><td>31877<\/td><td>Э. Купер<\/td><td>Ц-37<\/td><td>нал.<\/td><\/tr>\n    <tr style=\"background:rgba(155,42,32,.12)\"><td>29.10<\/td><td>Colt Police Positive .32<\/td><td><b>618204<\/b><\/td><td><span class=\"hand-m\" style=\"font-size:11pt\">Р. Хиллман<\/span><\/td><td><b>З-17<\/b><\/td><td>нал.<\/td><\/tr>\n    <tr><td>02.11<\/td><td>Охотничий нож<\/td><td>—<\/td><td>Л. Прайс<\/td><td>Ю-22<\/td><td>нал.<\/td><\/tr>\n  <\/table>\n  <p class=\"sm\" style=\"margin-top:4mm\">Покупатель предъявил водительское удостоверение на имя Хиллмана. Расписка в получении приложена к журналу.<br>Продавец: С. Бикман.<\/p>\n  <div class=\"foot\"><span>Журнал проверен инспектором: не проверялся<\/span><span>Стр. 3<\/span><\/div>\n<\/section>",
+7:"<section class=\"page paper-white\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Химчистка «Белая Лилия» · Ю-27<\/div><div class=\"b\">Книга заказов<\/div><div class=\"a\" style=\"letter-spacing:.1em\">Вторник, 6 ноября 1956<\/div><\/div>\n  <table style=\"font-size:7.8pt\">\n    <tr><th>№<\/th><th>Клиент<\/th><th>Вещь<\/th><th>Выдача / сумма<\/th><\/tr>\n    <tr><td>1<\/td><td>Н. Прайс<\/td><td>платье шёлковое<\/td><td>доставка Ц-9 · $1.50<\/td><\/tr>\n    <tr><td>2<\/td><td>—<\/td><td>костюм шерстяной<\/td><td>оплата на месте · $2.00<\/td><\/tr>\n    <tr><td>3<\/td><td>Д. Уитакер<\/td><td>рубашки, 3 шт.<\/td><td>доставка В-31 · $1.80<\/td><\/tr>\n    <tr><td>4<\/td><td>—<\/td><td>пальто демисезонное<\/td><td>оплата на месте · $2.50<\/td><\/tr>\n    <tr style=\"background:rgba(155,42,32,.1)\"><td>5<\/td><td><span class=\"hand-m\" style=\"font-size:11pt\">Хиллман<\/span><\/td><td>плащ мужской тёмно-серый, пятна, срочно<\/td><td>доставка <b>З-17<\/b> · $3.00<\/td><\/tr>\n    <tr><td>6<\/td><td>Э. Кросби<\/td><td>портьеры, 2 шт.<\/td><td>доставка Ю-22 · $4.00<\/td><\/tr>\n    <tr><td>7<\/td><td>—<\/td><td>скатерть<\/td><td>оплата на месте · $1.00<\/td><\/tr>\n    <tr><td>8<\/td><td>О'Рейли<\/td><td>форменная куртка<\/td><td>доставка С-60 · $2.20<\/td><\/tr>\n  <\/table>\n  <p class=\"sm\" style=\"margin-top:4mm\">Срочные заказы принимаются до полуночи и выполняются за ночь. Принято клиентов за день: 8.<br>Приёмщица: Р. Донахью.<\/p>\n  <div class=\"foot\"><span>Книга ведётся ежедневно<\/span><span>Лист 214<\/span><\/div>\n<\/section>",
+8:"<section class=\"page paper-white\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Клиника Св. Стефана · В-44<\/div><div class=\"b\">Медицинская карта<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Пациент<\/div><div class=\"v\">Рэйн, Дэниел<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Возраст<\/div><div class=\"v\">29 лет<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Поступил<\/div><div class=\"v\">5 ноября 1956, 21:58, в сопровождении патрульного<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Жалобы<\/div><div class=\"v\">Боль и отёк правой кисти после драки. Запах алкоголя, возбуждён.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Диагноз<\/div><div class=\"v\">Закрытый перелом IV–V пястных костей правой кисти<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Лечение<\/div><div class=\"v\">Рентген, обезболивание, гипсовая повязка (наложена к 22:40)<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Выписан<\/div><div class=\"v\">5 ноября, 23:30, под расписку, в сопровождении медсестры до выхода<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Дежурный врач<\/div><div class=\"v\">Д-р Фелпс<\/div><\/div>\n  <p class=\"sm\" style=\"margin-top:4mm\"><b>Примечание медсестры:<\/b> до 23:20 пациент находился в приёмном покое, всё время на виду.<\/p>\n  <div style=\"margin-top:6mm\" class=\"hand-m\">Мед. сестра К. Дэй<\/div>\n  <div class=\"foot\"><span>Подпись врача: Фелпс<\/span><span>Карта № 56-3119<\/span><\/div>\n<\/section>",
+9:"<section class=\"page paper-white\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Полиция Фэрхейвена · Главное управление · Ц-21<\/div><div class=\"b\">Рапорт по делу<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Дело<\/div><div class=\"v\">Убийство Э. Рэйн. Склад №4, П-12. Ведёт лейтенант Р. Гарленд.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Обнаружение<\/div><div class=\"v\">6 ноября, 06:10. Тело найдено сторожем Н. Бэрроу.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Обстановка<\/div><div class=\"v\">Контора цела, замок не повреждён. Следов борьбы нет. У ворот №2 на бетоне тёмные пятна, наполовину смытые дождём, и две борозды от каблуков к лестнице в контору. Группа крови пятен совпадает с группой пострадавшей.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Оружие<\/div><div class=\"v\">Револьвер Colt Police Positive .32, серийный № 618204. Найден 6 ноября в 09:20 в мусорном баке у дома Ю-61 после анонимного звонка (в 07:05, мужской голос, из автомата у порта).<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Баллистика<\/div><div class=\"v\">В барабане пять патронов и одна стреляная гильза. Пуля из тела совпадает с нарезами ствола. Отпечатков нет: оружие протёрто.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Заявления<\/div><div class=\"v\">Мэддокс Ф., начальник склада: весь вечер провёл в «Таверне Дойла», ушёл на закрытии (полночь). Харлоу Л., владелица: вечером была на балу Лиги. Рэйн Д. (брат): в момент убийства находился в клинике.<\/div><\/div>\n  <div class=\"row\"><div class=\"k\">Версии<\/div><div class=\"v\">Оружие найдено у брата жертвы. Должен ростовщику. Мотив: наследство, долги.<\/div><\/div>\n  <div style=\"margin-top:5mm\" class=\"hand-m\">Лейтенант Р. Гарленд<\/div>\n  <div class=\"foot\"><span>Не для разглашения<\/span><span>Рапорт № 1956-11-06/1<\/span><\/div>\n<\/section>",
+10:"<section class=\"page paper-grey\">\n  <div class=\"form-h\" style=\"margin-top:8mm\"><div class=\"a\">Полицейская лаборатория баллистики<\/div><div class=\"b\">Вещественное доказательство №17<\/div><\/div>\n  <div class=\"photo\"><svg viewBox=\"0 0 420 270\" role=\"img\" aria-label=\"Револьвер Colt с линейкой и номером\">\n    <defs><filter id=\"g2\"><feTurbulence type=\"fractalNoise\" baseFrequency=\".9\" numOctaves=\"2\" seed=\"7\"/><feColorMatrix type=\"saturate\" values=\"0\"/><\/filter>\n    <radialGradient id=\"l2\" cx=\".5\" cy=\".4\" r=\".9\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#000\" stop-opacity=\".5\"/><\/radialGradient><\/defs>\n    <rect width=\"420\" height=\"270\" fill=\"#b8b6af\"/>\n    <g transform=\"translate(18,10)\">\n      <path d=\"M60 60 L150 60 L150 100 L112 100 L104 112 L72 112 L72 100 L60 100 Z\" fill=\"#2b2b2c\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <path d=\"M60 60 L48 48 L58 44 L70 58 Z\" fill=\"#202021\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <path d=\"M72 100 Q60 150 50 180 L88 190 Q96 150 104 112 Z\" fill=\"#4b3a2a\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <path d=\"M104 112 Q130 138 152 110\" fill=\"none\" stroke=\"#0b0b0b\" stroke-width=\"4\"/>\n      <path d=\"M128 102 L134 122\" stroke=\"#0b0b0b\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n      <rect x=\"112\" y=\"54\" width=\"42\" height=\"48\" rx=\"6\" fill=\"#363637\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <g stroke=\"#111\" stroke-width=\"3\"><path d=\"M122 56V100M133 56V100M144 56V100\"/><\/g>\n      <rect x=\"154\" y=\"64\" width=\"230\" height=\"18\" fill=\"#2a2a2b\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <rect x=\"154\" y=\"82\" width=\"110\" height=\"9\" fill=\"#2f2f30\" stroke=\"#0b0b0b\" stroke-width=\"3\"/>\n      <path d=\"M372 64 L380 52 L386 64Z\" fill=\"#1c1c1d\" stroke=\"#0b0b0b\" stroke-width=\"2\"/>\n      <path d=\"M154 66H380\" stroke=\"#777\" stroke-width=\"2\"/><path d=\"M62 64L140 64\" stroke=\"#777\" stroke-width=\"2\"/>\n    <\/g>\n    <g transform=\"translate(24,208)\"><rect width=\"370\" height=\"22\" fill=\"#e6dfc7\" stroke=\"#0b0b0b\" stroke-width=\"2\"/>\n      <g stroke=\"#0b0b0b\" stroke-width=\"1.5\"><path d=\"M0 22V10M37 22V10M74 22V10M111 22V10M148 22V10M185 22V10M222 22V10M259 22V10M296 22V10M333 22V10M370 22V10\"/>\n      <path d=\"M18 22V16M55 22V16M92 22V16M129 22V16M166 22V16M203 22V16M240 22V16M277 22V16M314 22V16M351 22V16\"/><\/g>\n      <g font-family=\"Oswald\" font-size=\"9\" fill=\"#0b0b0b\"><text x=\"2\" y=\"9\">0<\/text><text x=\"150\" y=\"9\">4 дюйма<\/text><text x=\"338\" y=\"9\">10 см<\/text><\/g><\/g>\n    <g><rect x=\"238\" y=\"146\" width=\"150\" height=\"46\" fill=\"#f2ecd5\" stroke=\"#0b0b0b\" stroke-width=\"2\"/>\n      <text x=\"246\" y=\"162\" font-family=\"Oswald\" font-size=\"10\" fill=\"#9b2a20\">СЕРИЙНЫЙ №<\/text>\n      <text x=\"246\" y=\"184\" font-family=\"IBM Plex Mono\" font-size=\"20\" font-weight=\"600\" fill=\"#111\">618204<\/text>\n      <path d=\"M238 170 L128 130\" stroke=\"#9b2a20\" stroke-width=\"2\" stroke-dasharray=\"4 3\"/><\/g>\n    <rect x=\"320\" y=\"14\" width=\"86\" height=\"34\" fill=\"#f2ecd5\" stroke=\"#0b0b0b\" stroke-width=\"2\"/>\n    <text x=\"326\" y=\"28\" font-family=\"Oswald\" font-size=\"9\" fill=\"#0b0b0b\">ДОКАЗАТЕЛЬСТВО<\/text><text x=\"326\" y=\"42\" font-family=\"IBM Plex Mono\" font-size=\"12\" font-weight=\"600\">№ 17<\/text>\n    <rect width=\"420\" height=\"270\" fill=\"url(#l2)\"/><rect width=\"420\" height=\"270\" filter=\"url(#g2)\" opacity=\".2\"/><\/svg><\/div>\n  <div class=\"cap\">Револьвер Colt Police Positive, калибр .32. Найден 6 ноября в мусорном баке у Ю-61.<br>Рукоять из тёмного дерева, ствол 4 дюйма. Серийный номер читается чётко. Отпечатки не обнаружены.<\/div>\n  <div class=\"foot\"><span>Лаборатория баллистики<\/span><span>Снимок №17<\/span><\/div>\n<\/section>",
+11:"<section class=\"page paper-white\">\n  <div class=\"form-h\" style=\"margin-top:6mm\"><div class=\"a\">Найдено при обыске дома З-17<\/div><div class=\"b\">Накладные «Харлоу Фрейт»<\/div><\/div>\n  <div style=\"border:1.5px solid #1c1a15;padding:2.5mm 3mm;margin-bottom:3mm;background:#faf7ee\">\n    <div style=\"display:flex;justify-content:space-between;font-family:'Oswald';letter-spacing:.1em;font-size:8pt\"><span>ХАРЛОУ ФРЕЙТ · НАКЛАДНАЯ № 4417<\/span><span>14.09.56<\/span><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Груз<\/div><div class=\"v\">Табак в ящиках, 40 мест<\/div><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Принял<\/div><div class=\"v\"><span class=\"hand-m\" style=\"font-size:13pt\">Э. Рэйн<\/span><\/div><\/div>\n  <\/div>\n  <div style=\"border:1.5px solid #1c1a15;padding:2.5mm 3mm;margin-bottom:3mm;background:#faf7ee\">\n    <div style=\"display:flex;justify-content:space-between;font-family:'Oswald';letter-spacing:.1em;font-size:8pt\"><span>ХАРЛОУ ФРЕЙТ · НАКЛАДНАЯ № 4561<\/span><span>05.10.56<\/span><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Груз<\/div><div class=\"v\">Лекарства, 25 мест<\/div><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Принял<\/div><div class=\"v\"><span class=\"hand-m\" style=\"font-size:13pt\">Э. Рэйн<\/span><\/div><\/div>\n  <\/div>\n  <div style=\"border:1.5px solid #1c1a15;padding:2.5mm 3mm;margin-bottom:3mm;background:#faf7ee\">\n    <div style=\"display:flex;justify-content:space-between;font-family:'Oswald';letter-spacing:.1em;font-size:8pt\"><span>ХАРЛОУ ФРЕЙТ · НАКЛАДНАЯ № 4660<\/span><span>19.10.56<\/span><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Груз<\/div><div class=\"v\">Ткань в рулонах, 28 мест<\/div><\/div>\n    <div class=\"row\" style=\"border-color:#bbb\"><div class=\"k\">Принял<\/div><div class=\"v\"><span class=\"hand-m\" style=\"font-size:13pt\">Э. Рэйн<\/span><\/div><\/div>\n  <\/div>\n  <div class=\"sm\" style=\"margin-top:2mm\"><b>На обороте одной из накладных, карандашом:<\/b><\/div>\n  <div class=\"hand\" style=\"margin-top:1mm\">ворота 2, ночь, без записи. Пересчитать завтра.<\/div>\n  <p class=\"sm\" style=\"margin-top:3mm\">Подписи «Э. Рэйн» на всех накладных выполнены одной и той же рукой. Почерк не совпадает с образцами из тетради Э. Рэйн. Рядом лежала пустая коробка от патронов .32, в ней не хватает двух штук.<\/p>\n  <div class=\"foot\"><span>Изъято по ордеру судьи Мортона<\/span><span>Опись № 7<\/span><\/div>\n<\/section>"
+};
+
+const DIR = {"acq": [["Лейтенант Рой Гарленд", "Главное управление (Ц-21). Ведёт дела об убийствах. Не любит, когда его торопят, но слово держит."], ["Ирвинг Хейл", "коронер, Центр судебной медицины (Ю-38). Говорит честно и громко, особенно когда его отвлекают от работы."], ["Уолт Чендлер", "журналист «Фэрхейвен Курьер» (Ц-55). Знает, что творится в порту, и любит делиться, если вы поделитесь в ответ."], ["Судья Мортон", "Подписывает ордера на обыск, если вы приносите улики. Не любит пустых слов."]], "groups": [["Полиция", [["Главное управление", "Ц-21"], ["Полицейский архив", "С-58"], ["Участок №1", "С-21"], ["Участок №2", "Ю-33"], ["Участок №3", "В-33"], ["Участок №4", "З-67"], ["Участок №5", "Ю-62"], ["Штрафная стоянка", "Ю-76"], ["Городская тюрьма", "З-78"]]], ["Клиники и медицина", [["Клиника Св. Стефана", "В-44"], ["Восточная клиника", "В-81"], ["Городская клиника Ст. Твинс", "Ю-36"], ["Медицинский центр им. Вашингтона", "З-27"], ["Мемориальный госпиталь Калверта", "З-48"], ["Психиатрическая лечебница", "З-98"], ["Спасательная станция", "П-3"], ["Центр судебной медицины", "Ю-38"]]], ["Городские службы", [["Мэрия", "Ц-30"], ["ЗАГС центральный", "Ц-33"], ["Городской архив", "Ю-51"], ["Телефонная станция", "Ц-48"], ["Налоговая инспекция", "Ц-70"], ["Департамент регистрации транспорта", "Ц-13"]]], ["Заведения и места", [["Таверна Дойла", "Ю-40"], ["Ресторан Карузо", "Ц-61"], ["Рэдклиф-холл, Лига благотворительности", "В-60"], ["Ломбард «Золотой Якорь»", "П-19"], ["Ломбард «Три шара»", "С-77"], ["Химчистка «Белая Лилия»", "Ю-27"], ["Склад №4 «Харлоу Фрейт»", "П-12"], ["Контора «Харлоу Фрейт»", "Ц-12"], ["Редакция «Фэрхейвен Курьер»", "Ц-55"], ["Кинотеатр «Рекс»", "Ц-9"], ["Аптека на Центральной", "Ц-18"], ["Центральная станция (автобусы)", "Ц-4"], ["Южный автовокзал", "Ю-1"], ["Такси «Ласточка»", "С-40"]]]], "people": [["А", [["Абботт Джордж", "П-45"], ["Адамс Лора", "П-94/4"], ["Андерсон Пол", "П-16"], ["Арнольд Бетти", "З-40"]]], ["Б", [["Бейкер Хью", "Ц-72"], ["Белл Фред", "С-13/3"], ["Бенсон Айрис", "З-2"], ["Бикман Сэм", "П-19"], ["Блэр Уолтер", "П-24"], ["Браун Мэри", "Ц-56"], ["Бэрроу Ной", "П-3"], ["Бёрнс Тедди", "П-4"]]], ["В", [["Вайт Клара", "С-35"], ["Вернон Джек", "Ю-79"]]], ["Г", [["Гарднер Эми", "Ц-92/2"], ["Гарленд Рой", "Ц-21"], ["Гибсон Лу", "П-86/4"], ["Голд Сэмюэл", "С-68"], ["Грант Эдит", "Ц-35/2"], ["Грейс Томми", "П-27"]]], ["Д", [["Дойл Мартин", "Ю-98/2"], ["Донахью Рита", "Ю-27"], ["Дэвис Нора", "П-11"], ["Дюпон Анри", "З-77"]]], ["З", [["Зигель Моррис", "В-50/4"]]], ["И", [["Иверс Лоис", "Ю-10"]]], ["Й", [["Йорк Саймон", "В-29"]]], ["К", [["Карузо Винс", "Ц-61"], ["Кент Дора", "Ц-12"], ["Кларк Руфус", "П-38"], ["Колдуэлл Дон", "Ц-93"], ["Купер Элли", "В-49"]]], ["Л", [["Лоури Эдвард", "Ц-70"], ["Лоусон Билл", "С-26"], ["Лэнг Мейбл", "П-18/4"]]], ["М", [["Мартин Джойс", "Ц-84"], ["Миллер Эдди", "П-96"], ["Морган Тэсс", "Ц-32/4"], ["Мэддокс Фрэнк", "С-29"]]], ["Н", [["Нортон Гэс", "П-78"]]], ["О", [["Олсон Рэй", "Ю-37"]]], ["П", [["Паркер Лиз", "П-35"], ["Пирс Гарри", "Ц-6"], ["Престон Ким", "В-71"]]], ["Р", [["Райт Дейл", "В-59"], ["Робертс Фэй", "Ю-2"], ["Рэйн Дэнни", "Ю-61"], ["Рэйн Эвелин", "С-14"]]], ["С", [["Сандерс Ал", "П-37/1"], ["Стоун Мина", "Ю-58"]]], ["Т", [["Тёрнер Бак", "П-74"]]], ["У", [["Уильямс Вернон", "Ц-13"], ["Уитакер Дэн", "С-31/2"]]], ["Ф", [["Фишер Нил", "З-13"], ["Флинн Арт", "С-1/4"], ["Форд Рози", "С-18"], ["Фрост Нэнси", "С-15"]]], ["Х", [["Харлоу Лилиан", "В-10"], ["Хейл Ирвинг", "Ю-38"], ["Хиллман Анна", "З-17"], ["Холлис Макс", "Ю-40"], ["Хьюз Алма", "В-55"]]], ["Ч", [["Чендлер Уолт", "Ц-55"], ["Чэпмен Лу", "В-96/1"]]], ["Ш", [["Шоу Мэтт", "В-74"]]], ["Э", [["Эллис Вера", "Ц-51/1"]]], ["Ю", [["Юнг Герман", "С-80"]]], ["Я", [["Янг Бетти", "Ц-73"]]]]};
+const DIRMAP = "<svg viewBox=\"0 0 520 400\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:auto;display:block\">\n<rect width=\"520\" height=\"400\" fill=\"#e8dfc6\"/>\n<path d=\"M0 300 C120 280 200 330 330 310 S470 250 520 270 L520 400 L0 400Z\" fill=\"#b7c3c4\" opacity=\".75\"/>\n<text x=\"260\" y=\"375\" text-anchor=\"middle\" font-size=\"12\" font-family=\"Oswald\" letter-spacing=\"3\" fill=\"#44575c\">РЕКА ФЭРХЕЙВЕН · ПОРТ<\/text>\n<g fill=\"none\" stroke=\"#1d1a14\" stroke-width=\"1.6\">\n <path d=\"M30 60 H490 V280 H30Z\" stroke-dasharray=\"6 4\"/>\n <path d=\"M260 60 V280 M30 170 H490\"/>\n <path d=\"M175 110 H345 V230 H175Z\" stroke-width=\"2.6\"/>\n<\/g>\n<g font-family=\"Old Standard TT\" font-weight=\"700\" font-size=\"26\" fill=\"#1d1a14\" opacity=\".18\">\n <text x=\"240\" y=\"180\">Ц<\/text><text x=\"240\" y=\"100\">С<\/text><text x=\"240\" y=\"250\">Ю<\/text><text x=\"400\" y=\"180\">В<\/text><text x=\"85\" y=\"180\">З<\/text><text x=\"415\" y=\"295\">П<\/text>\n<\/g>\n<g font-family=\"Oswald\" font-size=\"9\" letter-spacing=\"2\" fill=\"#1d1a14\">\n <text x=\"44\" y=\"78\">СЕВЕР, С<\/text><text x=\"44\" y=\"268\">ЮГ, Ю<\/text><text x=\"400\" y=\"78\">ВОСТОК, В<\/text><text x=\"44\" y=\"190\">ЗАПАД, З<\/text><text x=\"198\" y=\"128\">ЦЕНТР, Ц<\/text>\n <text x=\"360\" y=\"296\">ПОРТ, П<\/text>\n<\/g>\n<circle cx=\"250\" cy=\"150\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"256\" y=\"154\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ц-21<\/text>\n<circle cx=\"215\" cy=\"180\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"209\" y=\"192\" text-anchor=\"end\" font-size=\"9.5\" font-family=\"Oswald\">Ц-30<\/text>\n<circle cx=\"300\" cy=\"150\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"306\" y=\"154\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ц-55<\/text>\n<circle cx=\"300\" cy=\"200\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"306\" y=\"204\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ц-61<\/text>\n<circle cx=\"330\" cy=\"118\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"336\" y=\"122\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ц-12<\/text>\n<circle cx=\"330\" cy=\"225\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"336\" y=\"229\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ц-70<\/text>\n<circle cx=\"210\" cy=\"240\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"204\" y=\"244\" text-anchor=\"end\" font-size=\"9.5\" font-family=\"Oswald\">Ю-38<\/text>\n<circle cx=\"270\" cy=\"250\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"276\" y=\"254\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ю-40<\/text>\n<circle cx=\"340\" cy=\"262\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"346\" y=\"266\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">Ю-33<\/text>\n<circle cx=\"230\" cy=\"268\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"224\" y=\"272\" text-anchor=\"end\" font-size=\"9.5\" font-family=\"Oswald\">Ю-27<\/text>\n<circle cx=\"400\" cy=\"140\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"406\" y=\"144\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">В-44<\/text>\n<circle cx=\"400\" cy=\"210\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"406\" y=\"214\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">В-60<\/text>\n<circle cx=\"130\" cy=\"150\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"136\" y=\"154\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">З-17<\/text>\n<circle cx=\"110\" cy=\"210\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"116\" y=\"214\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">З-27<\/text>\n<circle cx=\"130\" cy=\"100\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"136\" y=\"104\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">С-29<\/text>\n<circle cx=\"300\" cy=\"95\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"306\" y=\"99\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">С-14<\/text>\n<circle cx=\"180\" cy=\"300\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"186\" y=\"304\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">П-3<\/text>\n<circle cx=\"420\" cy=\"310\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"426\" y=\"314\" text-anchor=\"start\" font-size=\"9.5\" font-family=\"Oswald\">П-12<\/text>\n<circle cx=\"470\" cy=\"335\" r=\"3.2\" fill=\"#1d1a14\"/><text x=\"464\" y=\"328\" text-anchor=\"end\" font-size=\"9.5\" font-family=\"Oswald\">П-19<\/text>\n<\/svg><p class=\"hint\">На схеме отмечены только основные учреждения. Остальные адреса ищите в справочнике.<\/p>";
+
+/* Ответы вводятся текстом. Ответ верный, если совпала любая группа из ok (все слова группы) и нет слов из bad. */
+const QUESTIONS = [
+ {id:'killer',label:'Кто убил Эвелин Рэйн?',ph:'Имя и фамилия',
+  ok:[['мэддокс'],['маддокс'],['мадокс'],['фрэнк'],['френк']],
+  bad:['харлоу','лилиан','дэнни','рэйн','томми','грейс','карузо','бэрроу','бикман','кросс']},
+ {id:'weapon',label:'Орудие убийства',ph:'Что за оружие',
+  ok:[['32'],['кольт'],['colt'],['police','positive']],
+  bad:['38','45','обрез','монтировк','нож','удавк','пресс']},
+ {id:'motive',label:'Мотив',ph:'Почему убил',
+  ok:[['хищен'],['краж'],['воров'],['накладн'],['недостач'],['подделк'],['афер'],['скрыть','склад'],['скрыв'],['груз']],
+  bad:['долг','месть','мести','увольн','наследств','ревност','страхов']},
+ {id:'place',label:'Где совершено убийство?',ph:'Место',
+  ok:[['рамп'],['ворот','2'],['погрузоч']],
+  bad:['контор','квартир','таверн','парковк']},
+ {id:'alibi',label:'Что разрушает алиби убийцы?',ph:'Свидетель или улика и что он показал',
+  ok:[['бармен'],['холлис'],['отлуч'],['выходил'],['вышел','таверн'],['ушел','таверн'],['сигарет']],
+  bad:['соседк']},
+ {id:'link',label:'Какая улика связывает убийцу с орудием?',ph:'Документ или улика',
+  ok:[['ломбард'],['хиллман'],['якор'],['з17'],['журнал','покупател'],['серийн']],
+  bad:['отпечат','химчист','плащ','тетрад']}
+];
+
+/* ============ ДВИЖОК ============ */
+const LAT = {A:'А',B:'В',C:'С',E:'Е',H:'Н',K:'К',M:'М',O:'О',P:'Р',T:'Т',X:'Х',Y:'У'};
+function fixLat(s){return s.toUpperCase().replace(/[ABCEHKMOPTXY]/g,c=>LAT[c]);}
+function normAddr(s){
+  let x=fixLat(String(s||'')).replace(/[‐-―−]/g,'-').replace(/[^А-ЯЁ0-9-]/g,'');
+  const m=x.match(/^([А-ЯЁ]+)-?(\d+)$/);
+  return m?m[1]+'-'+m[2]:x;
+}
+function normText(s){
+  return fixLat(String(s||'')).toLowerCase().replace(/ё/g,'е').replace(/[^а-я0-9]/g,'');
+}
+const QN = ENTRIES.map(e=>({e,addr:normAddr(e.a),qs:e.q?e.q.map(normText):null}));
+function parse(raw){
+  const i=raw.indexOf('/');
+  return i<0?{addr:normAddr(raw),rest:''}:{addr:normAddr(raw.slice(0,i)),rest:normText(raw.slice(i+1))};
+}
+function resolve(raw){
+  const {addr,rest}=parse(raw);
+  const group=QN.filter(x=>x.addr===addr);
+  if(!group.length) return {kind:'none',addr,msg:'К сожалению, информации по этому адресу нет.'};
+  if(!rest){
+    const hit=group.find(x=>x.qs===null);
+    return hit?{kind:'ok',entry:hit.e,addr}:{kind:'miss',addr,msg:'Уточните запрос: адрес/имя или номер.'};
+  }
+  const hit=group.find(x=>x.qs&&x.qs.some(k=>rest.includes(k)));
+  if(hit) return {kind:'ok',entry:hit.e,addr};
+  return {kind:'miss',addr,msg:'По этому запросу ничего не найдено.'};
+}
+function resolveWarrant(rawAddr,checked){
+  const addr=normAddr(rawAddr);
+  const w=WARRANTS.find(x=>normAddr(x.a)===addr);
+  if(!w) return {ok:false,msg:'Судья Мортон отклоняет запрос: этот адрес не связан с делом.'};
+  if(!w.any.some(n=>checked.includes(n))) return {ok:false,msg:'Судья Мортон отказывает: оснований недостаточно. Нужны улики, которые прямо указывают на этот адрес.'};
+  return {ok:true,w};
+}
+function resolveShow(person,item){
+  return SHOWS.find(s=>s.p===person&&s.i===item)||null;
+}
+/* Ответы: приведение к виду без регистра, лишних знаков и двойных букв (Мэддокс = Медокс) */
+function normAns(s){
+  return String(s||'').toLowerCase().replace(/ё/g,'е').replace(/э/g,'е').replace(/[^а-яa-z0-9]/g,'').replace(/(.)\1+/g,'$1');
+}
+function isRight(q,text){
+  const t=normAns(text);
+  if(!t)return false;
+  if(q.bad.some(w=>t.includes(normAns(w))))return false;
+  return q.ok.some(g=>g.every(w=>t.includes(normAns(w))));
+}
+function score(ans){
+  return QUESTIONS.reduce((n,q)=>n+(isRight(q,ans[q.id])?1:0),0);
+}
+
+if(typeof document==='undefined'){ module.exports={isRight,resolve,resolveWarrant,resolveShow,score,QUESTIONS,ENTRIES,APPS,WARRANTS,SHOWS,normAddr}; }
+else (function(){
+/* ============ СОСТОЯНИЕ ============ */
+const KEY='sttwins-case1-v1';
+let mem=null;
+function load(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s);}catch(e){}return mem||{team:'',start:0,log:[],apps:[],people:[],ans:null,score:null};}
+let S=load();
+function save(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=id=>document.getElementById(id);
+function el(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n;}
+
+/* ============ ВИД ============ */
+const TABS=['search','dir','show','warrant','found','history','answers'];
+function showTab(name,fromHash){
+  document.querySelectorAll('#tabs button').forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;});
+  if(!fromHash){try{history.replaceState(null,'','#'+name);}catch(e){}}
+  TABS.forEach(t=>{$('p-'+t).hidden=(t!==name);});
+  if(name==='history')fillHistory();
+  if(name==='dir')fillDir();
+  if(name==='show')fillShow();
+  if(name==='warrant')fillWarrant();
+  if(name==='found')fillFound();
+  if(name==='answers')fillAnswers();
+}
+function appStamp(n){
+  const wrap=el('div');
+  const b=el('div','stampbox');
+  b.appendChild(el('div','n','Приложение '+n));
+  const d=el('div','d');
+  d.appendChild(el('div',null,APPS[n]+'. Бумажный экземпляр принесёт раннер.'));
+  b.appendChild(d);
+  wrap.appendChild(b);wrap.appendChild(apxBlock(n));
+  return wrap;
+}
+function apxToggle(btn,host,n){
+  const open=host.firstChild;
+  if(open){host.textContent='';btn.textContent='Открыть приложение '+n;return;}
+  const v=el('div','apx');v.innerHTML=APX[n]||'';host.appendChild(v);btn.textContent='Скрыть приложение '+n;
+}
+function apxBlock(n){
+  const w=el('div');
+  const btn=el('button','btn alt apxbtn','Открыть приложение '+n);btn.type='button';
+  const host=el('div');
+  btn.addEventListener('click',()=>apxToggle(btn,host,n));
+  w.appendChild(btn);w.appendChild(host);return w;
+}
+function addApps(list){(list||[]).forEach(n=>{if(!S.apps.includes(n))S.apps.push(n);});}
+function addPerson(p){if(p&&!S.people.includes(p))S.people.push(p);}
+function entryBox(o){
+  const open=o.open!==false;
+  const box=el('div','entry'+(open?'':' collapsed'));
+  const head=el('button','ehead');head.type='button';head.setAttribute('aria-expanded',open?'true':'false');
+  const l=el('span','el');
+  if(o.query)l.appendChild(el('span','q','Запрос: '+o.query+(o.when!=null?' · '+o.when:'')));
+  l.appendChild(el('span','et',o.title));
+  if(o.text)l.appendChild(el('span','prev',o.text.replace(/\s+/g,' ').slice(0,90)));
+  head.appendChild(l);head.appendChild(el('span','chev','▾'));
+  head.addEventListener('click',()=>{const c=box.classList.toggle('collapsed');head.setAttribute('aria-expanded',c?'false':'true');});
+  const body=el('div','ebody');
+  if(o.note)body.appendChild(el('div','note',o.note));
+  if(o.text)body.appendChild(el('p','t',o.text));
+  (o.apps||[]).forEach(n=>body.appendChild(appStamp(n)));
+  box.appendChild(head);box.appendChild(body);return box;
+}
+function minutes(ts){return Math.max(0,Math.round((ts-S.start)/60000));}
+function logKey(raw){const q=parse(raw);return q.addr+'/'+q.rest;}
+function runSearch(){
+  const raw=$('q').value.trim();
+  if(!raw)return;
+  const r=resolve(raw);
+  const out=$('out');
+  const key=logKey(raw);
+  const prev=S.log.find(x=>x.key===key);
+  const note=prev?'Вы уже запрашивали это на '+minutes(prev.ts)+' минуте игры':'';
+  if(r.kind==='ok'){
+    const e=r.entry;
+    const newApps=(e.apps||[]).filter(n=>!S.apps.includes(n));
+    addApps(e.apps);addPerson(e.who);
+    S.log.unshift({q:raw,key,addr:r.addr,ok:true,ts:Date.now(),title:e.title,t:e.t,apps:e.apps||[]});
+    save();
+    out.insertBefore(entryBox({title:e.title,query:raw,text:e.t,apps:newApps.length?newApps:(e.apps||[]),note}),out.firstChild);
+  }else{
+    S.log.unshift({q:raw,key,addr:r.addr,ok:false,ts:Date.now(),title:'Нет данных',t:r.msg,apps:[]});save();
+    out.insertBefore(entryBox({title:'Нет данных',query:raw,text:r.msg,note}),out.firstChild);
+  }
+  $('q').value='';$('q').focus();
+}
+function fillShow(){
+  const p=$('shP'),i=$('shI');
+  p.textContent='';i.textContent='';
+  if(!S.people.length){p.appendChild(new Option('Вы ещё ни с кем не говорили',''));}
+  S.people.forEach(x=>p.appendChild(new Option(x,x)));
+  if(!S.apps.length){i.appendChild(new Option('У вас нет приложений',''));}
+  S.apps.slice().sort((a,b)=>a-b).forEach(n=>i.appendChild(new Option('Приложение '+n+'. '+APPS[n],n)));
+}
+function runShow(){
+  const p=$('shP').value,i=Number($('shI').value);
+  const out=$('shOut');out.textContent='';
+  if(!p||!i){out.appendChild(el('p','empty','Выберите человека и приложение.'));return;}
+  const r=resolveShow(p,i);
+  const q='Предъявить: '+p+' / приложение '+i;
+  if(!r){
+    const t='Он внимательно смотрит на бумагу и пожимает плечами. Нового не говорит.';
+    out.appendChild(entryBox({title:p,text:t}));
+    S.log.unshift({q,key:q,addr:'',ok:true,ts:Date.now(),title:p,t,apps:[]});save();
+    return;
+  }
+  const fresh=(r.give||[]).filter(n=>!S.apps.includes(n));
+  addApps(r.give);
+  S.log.unshift({q,key:q,addr:'',ok:true,ts:Date.now(),title:p,t:r.t,apps:r.give||[]});save();
+  out.appendChild(entryBox({title:p,text:r.t,apps:fresh.length?fresh:r.give||[]}));
+}
+function fillWarrant(){
+  const l=$('wList');l.textContent='';
+  if(!S.apps.length){l.appendChild(el('p','empty','У вас пока нет приложений.'));return;}
+  S.apps.slice().sort((a,b)=>a-b).forEach(n=>{
+    const lab=el('label','chk');const c=document.createElement('input');c.type='checkbox';c.value=n;c.id='wc'+n;
+    lab.htmlFor='wc'+n;lab.appendChild(c);lab.appendChild(el('span',null,'Приложение '+n+'. '+APPS[n]));l.appendChild(lab);
+  });
+}
+function runWarrant(){
+  const a=$('wA').value.trim();const out=$('wOut');out.textContent='';
+  if(!a){out.appendChild(el('p','empty','Укажите адрес.'));return;}
+  const checked=[...document.querySelectorAll('#wList input:checked')].map(x=>Number(x.value));
+  const r=resolveWarrant(a,checked);
+  const q='Ордер: '+normAddr(a);
+  if(!r.ok){
+    out.appendChild(entryBox({title:'Отказ',query:q,text:r.msg}));
+    S.log.unshift({q,key:q,addr:normAddr(a),ok:false,ts:Date.now(),title:'Отказ',t:r.msg,apps:[]});save();
+  }else{
+    const fresh=(r.w.give||[]).filter(n=>!S.apps.includes(n));addApps(r.w.give);
+    out.appendChild(entryBox({title:'Ордер подписан',query:q,text:r.w.ok,apps:fresh.length?fresh:r.w.give||[]}));
+    S.log.unshift({q,key:q,addr:normAddr(a),ok:true,ts:Date.now(),title:'Ордер подписан',t:r.w.ok,apps:r.w.give||[]});save();
+  }
+}
+function fillFound(){
+  const ul=$('fApps');ul.textContent='';
+  if(!S.apps.length)ul.appendChild(el('li','empty','Пока ничего нет. Начните с запроса П-12.'));
+  S.apps.slice().sort((a,b)=>a-b).forEach(n=>{const li=el('li');li.appendChild(el('span','no','№'+n));li.appendChild(el('span',null,APPS[n]));const w=el('div','apxwrap');w.appendChild(apxBlock(n));li.appendChild(w);ul.appendChild(li);});
+}
+function fillHistory(){
+  const needle=normText($('hq').value);
+  const lg=$('fLog');lg.textContent='';
+  const items=S.log.filter(x=>!needle||normText(x.q+' '+(x.addr||'')+' '+x.title+' '+x.t).includes(needle));
+  $('hCount').textContent=S.log.length?('Показано '+items.length+' из '+S.log.length):'';
+  if(!S.log.length)lg.appendChild(el('p','empty','История пуста. Отправьте первый запрос.'));
+  else if(!items.length)lg.appendChild(el('p','empty','Ничего не найдено. Измените запрос или нажмите «Сбросить».'));
+  items.forEach(x=>lg.appendChild(entryBox({title:x.title,query:x.q,when:x.ts?minutes(x.ts)+' мин':null,text:x.t,apps:x.apps,open:false})));
+  const ch=$('hChips');ch.textContent='';
+  const seen=[];
+  S.log.slice().reverse().forEach(x=>{const a=x.ok&&x.addr;if(a&&!seen.includes(a))seen.push(a);});
+  if(!seen.length)ch.appendChild(el('span','empty','Пока нигде не были.'));
+  seen.forEach(a=>{const b=el('button','chip',a);b.type='button';b.addEventListener('click',()=>{$('hq').value=a;fillHistory();});ch.appendChild(b);});
+}
+function dirItem(name,addr){
+  const li=el('li');li.appendChild(el('span','dn',name));li.appendChild(el('i'));
+  const b=el('button','addr',addr);b.type='button';b.title='Подставить в запрос';
+  b.addEventListener('click',()=>{showTab('search');$('q').value=addr;$('q').focus();});
+  li.appendChild(b);return li;
+}
+function fillDir(){
+  const body=$('dirBody');const needle=normText($('dq').value);
+  body.textContent='';
+  const match=(n,a)=>!needle||normText(n+' '+a).includes(needle);
+  let any=false;
+  const addBlock=(title,list,cls)=>{
+    const rows=list.filter(x=>match(x[0],x[1]));if(!rows.length)return;any=true;
+    const h=el('h3','dh',title);body.appendChild(h);
+    const ul=el('ul','dirlist');rows.forEach(x=>ul.appendChild(dirItem(x[0],x[1])));body.appendChild(ul);
+  };
+  if(!needle){
+    const h=el('h3','dh','Ваши знакомые');body.appendChild(h);
+    DIR.acq.forEach(a=>{const p=el('p','acq');p.appendChild(el('b',null,a[0]+'. '));p.appendChild(document.createTextNode(a[1]));body.appendChild(p);});
+  }
+  DIR.groups.forEach(g=>addBlock(g[0],g[1]));
+  const ppl=[];DIR.people.forEach(g=>g[1].forEach(x=>ppl.push(x)));
+  addBlock('Жители города',ppl);
+  if(needle&&!any)body.appendChild(el('p','empty','Ничего не найдено. Измените запрос или нажмите «Очистить поиск».'));
+  if(!needle){const m=el('div','dmap');m.innerHTML=DIRMAP;body.appendChild(el('h3','dh','Схема города'));body.appendChild(m);}
+}
+function fillAnswers(){
+  const f=$('ansForm');f.textContent='';
+  if(S.ans){
+    f.appendChild(el('div','label','Команда «'+S.team+'»'));
+    f.appendChild(el('div','res','Верных ответов: '+S.score+' из '+QUESTIONS.length));
+    f.appendChild(el('p','hint','Дело сдано. Покажите экран ведущему. Он проверит ответы.'));
+    QUESTIONS.forEach(q=>{const r=el('div','ans');r.appendChild(el('div','label',q.label));r.appendChild(el('div','given',(S.ans[q.id]||'').toString()||'без ответа'));f.appendChild(r);});
+    return;
+  }
+  QUESTIONS.forEach(q=>{
+    const w=el('div','ans');const lab=el('label','label',q.label);lab.htmlFor='a-'+q.id;
+    const inp=document.createElement('input');inp.type='text';inp.id='a-'+q.id;inp.autocomplete='off';inp.name=q.id;inp.spellcheck=true;inp.maxLength=200;inp.placeholder=q.ph||'';
+    inp.value=(S.draft&&S.draft[q.id])||'';
+    inp.addEventListener('input',()=>{S.draft=S.draft||{};S.draft[q.id]=inp.value;save();});
+    w.appendChild(lab);w.appendChild(inp);f.appendChild(w);
+  });
+  const row=el('div','row');
+  const b=el('button','btn stamp','Сдать ответы');b.type='button';b.id='submitBtn';
+  const msg=el('p','hint');msg.id='subMsg';
+  let armed=false;
+  b.addEventListener('click',()=>{
+    const ans={};let miss=false;
+    QUESTIONS.forEach(q=>{const v=$('a-'+q.id).value.trim();if(!v)miss=true;ans[q.id]=v;});
+    if(miss){msg.textContent='Ответьте на все вопросы.';armed=false;b.textContent='Сдать ответы';return;}
+    if(!armed){armed=true;b.textContent='Подтвердить: изменить нельзя';msg.textContent='После подтверждения ответы изменить нельзя.';return;}
+    S.ans=ans;S.score=score(ans);save();fillAnswers();
+  });
+  row.appendChild(b);f.appendChild(row);f.appendChild(msg);
+}
+function tick(){
+  if(!S.start)return;
+  const m=Math.floor((Date.now()-S.start)/60000);
+  $('mClock').textContent=(m>=60?Math.floor(m/60)+' ч ':'')+(m%60)+' мин';
+}
+function enter(){
+  $('intro').hidden=true;$('main').hidden=false;$('meta').hidden=false;$('mTeam').textContent=S.team;tick();
+  const h=(location.hash||'').slice(1);showTab(TABS.includes(h)?h:'search',true);
+}
+function boot(){
+  if(S.team&&S.start){enter();}else{$('intro').hidden=false;}
+}
+$('startBtn').addEventListener('click',()=>{
+  const n=$('teamName').value.trim();
+  if(!n){$('teamName').focus();return;}
+  S.team=n;S.start=Date.now();save();enter();
+});
+$('teamName').addEventListener('keydown',e=>{if(e.key==='Enter')$('startBtn').click();});
+$('goBtn').addEventListener('click',runSearch);
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')runSearch();});
+$('shBtn').addEventListener('click',runShow);
+$('wBtn').addEventListener('click',runWarrant);
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('tabs').addEventListener('keydown',e=>{
+  const i=TABS.indexOf(document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.tab:'');
+  if(i<0)return;
+  let n=-1;
+  if(e.key==='ArrowRight')n=(i+1)%TABS.length;else if(e.key==='ArrowLeft')n=(i+TABS.length-1)%TABS.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=TABS.length-1;
+  if(n<0)return;e.preventDefault();showTab(TABS[n]);$('t-'+TABS[n]).focus();
+});
+window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);if(TABS.includes(h)&&!$('main').hidden)showTab(h,true);});
+$('hq').addEventListener('input',fillHistory);
+$('dq').addEventListener('input',fillDir);
+$('dClear').addEventListener('click',()=>{$('dq').value='';fillDir();});
+$('hClear').addEventListener('click',()=>{$('hq').value='';fillHistory();});
+document.querySelectorAll('.foldbar .mini').forEach(b=>b.addEventListener('click',()=>{
+  const box=$(b.parentNode.dataset.for);const close=b.dataset.fold==='close';
+  box.querySelectorAll('.entry').forEach(e=>{e.classList.toggle('collapsed',close);const h=e.querySelector('.ehead');if(h)h.setAttribute('aria-expanded',close?'false':'true');});
+}));
+$('resetLink').addEventListener('click',()=>{$('resetBox').hidden=!$('resetBox').hidden;});
+$('resetGo').addEventListener('click',()=>{
+  if($('resetCode').value.trim()==='1956'){S={team:'',start:0,log:[],apps:[],people:[],ans:null,score:null};save();location.reload();}
+});
+setInterval(tick,30000);
+boot();
+})();
+</script>
+
+</body></html>
