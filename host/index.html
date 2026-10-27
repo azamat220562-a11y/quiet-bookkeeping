@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Панель ведущего</title>
+<meta name="theme-color" content="#cdd5cf">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;500;600&display=swap">
+<style>
+/* Layout: control desk (clock + three big buttons + game code), live preview of the hall screen, cards for every screen and hint. */
+:root{
+  --bg:#cdd5cf;--paper:#efe6c8;--paper2:#e5dbb9;--ink:#26231c;--ink2:#5d5747;--line:#b5a77d;
+  --stamp:#9a2218;--steel:#2d4656;--steel-ink:#f3efe0;--ok:#2f6b3a;--warn:#9a5b00;
+  --stripe:rgba(0,0,0,.035);
+  --f-display:'Old Standard TT',Georgia,'Times New Roman',serif;
+  --f-type:'IBM Plex Mono','Courier New',monospace;
+  --f-label:'Oswald','Arial Narrow',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131a18;--paper:#1f2824;--paper2:#273029;--ink:#e8e1c8;--ink2:#a9a388;--line:#3b473f;--stamp:#e2594b;--steel:#8fb3c7;--steel-ink:#10181b;--ok:#79c28a;--warn:#e0a84a;--stripe:rgba(255,255,255,.035);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131a18;--paper:#1f2824;--paper2:#273029;--ink:#e8e1c8;--ink2:#a9a388;--line:#3b473f;--stamp:#e2594b;--steel:#8fb3c7;--steel-ink:#10181b;--ok:#79c28a;--warn:#e0a84a;--stripe:rgba(255,255,255,.035);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);background-image:repeating-linear-gradient(90deg,var(--stripe) 0 2px,transparent 2px 18px);color:var(--ink);font-family:var(--f-type);font-size:15px;line-height:1.55;
+  padding-block:18px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-size:clamp(26px,5vw,34px);line-height:1.1;margin:0}
+h2{font-family:var(--f-display);font-size:21px;margin:0}
+.label{font-family:var(--f-label);letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
+.hint{font-size:13px;color:var(--ink2)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+.btn{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:14px;padding:9px 14px;min-height:40px;background:var(--steel);color:var(--steel-ink);border:0;border-radius:3px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35);touch-action:manipulation;transition:transform .05s,box-shadow .05s,filter .15s}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--ink);box-shadow:none}
+.btn.red{background:var(--stamp);color:#fff}
+.btn.green{background:var(--ok);color:#fff}
+.btn.big{font-size:19px;min-height:58px;padding:12px 22px;flex:1 1 180px}
+.btn.small{font-size:12px;min-height:34px;padding:6px 10px}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+input[type=text],input[type=number],select,textarea{font:inherit;font-size:15px;background:var(--paper2);color:var(--ink);border:1px solid var(--ink);border-bottom-width:3px;border-radius:2px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:84px;line-height:1.45}
+.sheet{position:relative;background:var(--paper);border:1px solid var(--line);padding:16px max(14px,2.4vw);display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 0 var(--line),0 6px 0 -3px var(--paper2)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.timer{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center}
+.clock{font-family:var(--f-display);font-weight:700;font-size:clamp(46px,9vw,76px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.phase{font-family:var(--f-label);letter-spacing:.14em;text-transform:uppercase;font-size:14px}
+.phase b{color:var(--stamp)}
+.bar{height:10px;background:var(--paper2);border:1px solid var(--ink);margin-top:6px}
+.bar i{display:block;height:100%;background:var(--steel);width:0}
+.sub{font-variant-numeric:tabular-nums;color:var(--ink2);font-size:13px}
+.banner{border:2px solid var(--stamp);color:var(--stamp);padding:6px 10px;font-family:var(--f-label);letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+.live{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.live{grid-template-columns:1fr}.timer{grid-template-columns:1fr}}
+.prev{width:100%;aspect-ratio:16/9;border:3px solid var(--ink);background:#000;overflow:hidden;position:relative;container-type:inline-size}
+.card{border:1px solid var(--line);background:var(--paper2);padding:12px;display:flex;flex-direction:column;gap:8px;position:relative}
+.card.due{border:2px solid var(--stamp);box-shadow:0 0 0 3px rgba(154,34,24,.2)}
+.card.live-now{border:2px solid var(--ok)}
+.card .head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+.tagp{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:12px;padding:2px 8px;border:1px solid var(--ink)}
+.tagp:empty{display:none}
+.tagp.due{background:var(--stamp);color:#fff;border-color:var(--stamp)}
+.tagp.now{background:var(--ok);color:#fff;border-color:var(--ok)}
+.thumb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.thumb img{width:96px;height:54px;object-fit:cover;border:1px solid var(--ink);background:#000}
+.two{display:grid;grid-template-columns:1fr 110px;gap:8px}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.note{font-size:12.5px;color:var(--warn)}
+.codebox{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:center}
+.code{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,7vw,52px);letter-spacing:.14em;text-transform:uppercase;line-height:1}
+.net{font-size:13px}.net.ok{color:var(--ok)}.net.bad{color:var(--stamp)}
+[hidden]{display:none!important}
+/* ===== экран зала ===== */
+.scr{position:absolute;inset:0;overflow:hidden;color:#efe6c8;font-family:var(--f-display);background:#131a18 center/cover no-repeat;display:flex;align-items:center;justify-content:center;text-align:center;container-type:inline-size}
+.scr.bg-wall{background-color:#1a2420;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 3px,transparent 3px 26px),radial-gradient(120% 90% at 50% 20%,#2a3a33,#0e1412)}
+.scr.bg-night{background-color:#0a0f14;background-image:radial-gradient(60% 50% at 70% 25%,rgba(244,231,176,.28),transparent 70%),linear-gradient(180deg,#101820,#05080b)}
+.scr.bg-paper{background-color:#e5dbb9;color:#26231c;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.025) 0 1px,transparent 1px 4px)}
+.scr.bg-red{background-color:#3a0f0c;background-image:radial-gradient(80% 70% at 50% 40%,#6a1a14,#210806)}
+.scr.has-img::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.7))}
+.scr .in{position:relative;width:88%;max-height:90%;display:flex;flex-direction:column;align-items:center;gap:2.2cqw}
+.scr .k{font-family:var(--f-label);letter-spacing:.35em;text-transform:uppercase;font-size:2cqw;opacity:.85}
+.scr h1{font-size:8cqw;line-height:1.02;margin:0;text-transform:uppercase;text-wrap:balance;letter-spacing:.01em}
+.scr h3{font-size:3.2cqw;margin:0;font-weight:400;font-style:italic}
+.scr p{font-size:3cqw;line-height:1.35;margin:0;white-space:pre-wrap;text-wrap:balance;max-width:92%}
+.scr .stampbig{border:.5cqw solid #e2594b;color:#e2594b;font-family:var(--f-label);font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:3.4cqw;padding:.6cqw 2.6cqw;transform:rotate(-3deg)}
+.scr.bg-paper .stampbig{color:#9a2218;border-color:#9a2218}
+.scr .hintcard{background:rgba(239,230,200,.96);color:#26231c;padding:3cqw 4cqw;box-shadow:0 1cqw 3cqw rgba(0,0,0,.5);border:.3cqw solid #26231c;max-width:90%}
+.scr .hintcard p{font-size:3.6cqw;max-width:100%;font-family:var(--f-type);font-weight:500}
+.scr .big{font-family:var(--f-display);font-weight:700;font-size:16cqw;line-height:1;font-variant-numeric:tabular-nums}
+.scr .codebig{font-family:var(--f-display);font-weight:700;font-size:13cqw;line-height:1;letter-spacing:.14em;text-transform:uppercase}
+.scr .qr{background:#fff;padding:1.4cqw;display:inline-block;line-height:0}
+.scr .qr img,.scr .qr canvas{width:22cqw!important;height:22cqw!important;display:block}
+.scr .url{font-family:var(--f-type);font-size:2.2cqw;opacity:.9;word-break:break-all}
+.scr .chip{position:absolute;right:2cqw;bottom:1.6cqw;font-family:var(--f-label);letter-spacing:.14em;font-size:2.6cqw;padding:.4cqw 1.6cqw;background:rgba(0,0,0,.55);color:#efe6c8;border:.2cqw solid rgba(239,230,200,.6);font-variant-numeric:tabular-nums}
+.scr.bg-paper .chip{background:rgba(255,255,255,.6);color:#26231c;border-color:#26231c}
+.scr .rule{width:30%;border-top:.4cqw double currentColor;opacity:.7}
+.fs{position:fixed;inset:0;z-index:1000;background:#000}
+.fs .stage{position:absolute;inset:0}
+.fs .ctrl{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px;background:rgba(0,0,0,.72);opacity:0;transition:opacity .2s;z-index:2}
+.fs:hover .ctrl,.fs .ctrl:focus-within{opacity:1}
+body.screenmode{padding:0;background:#000;overflow:hidden}
+body.screenmode .wrap{display:none}
+body.screenmode .fs{display:block}
+@media (prefers-reduced-motion: reduce){.btn,.fs .ctrl{transition:none}}
+</style>
+</head><body>
+
+<div class="wrap" id="panel">
+  <header class="row" style="justify-content:space-between">
+    <div>
+      <div class="label">Фэрхейвен · пульт ведущего</div>
+      <h1>Панель ведущего</h1>
+    </div>
+    <div class="row">
+      <button class="btn alt small" id="btnSnd" type="button" aria-pressed="true">Звук: вкл</button>
+      <button class="btn alt small" id="btnFull" type="button">На весь экран здесь</button>
+      <button class="btn alt small" id="btnWin" type="button">Открыть экран в окне</button>
+    </div>
+  </header>
+  <div class="note" id="winNote" hidden></div>
+
+  <section class="sheet" aria-label="Управление игрой">
+    <div class="timer">
+      <div class="clock" id="clock" aria-live="off">00:00</div>
+      <div>
+        <div class="phase" id="phase">Игра не начата</div>
+        <div class="bar"><i id="barFill"></i></div>
+        <div class="sub" id="subClock"></div>
+      </div>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="row">
+      <button class="btn big green" id="bStart" type="button">Начать игру</button>
+      <button class="btn big" id="bPause" type="button" hidden>Приостановить</button>
+      <button class="btn big red" id="bEnd" type="button" hidden>Закончить</button>
+    </div>
+    <div class="hint" id="stateHint">До начала игры у игроков экран «Дело ещё не поступило».</div>
+  </section>
+
+  <section class="sheet" aria-label="Код игры">
+    <div class="codebox">
+      <div class="code" id="codeText">-----</div>
+      <div class="f">
+        <span class="label">Код игры и ссылка для игроков</span>
+        <input type="text" id="joinUrl" readonly aria-label="Ссылка для игроков">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn alt small" id="bCopy" type="button">Скопировать ссылку</button>
+      <button class="btn alt small" id="bShowCode" type="button">Показать код и QR на экране зала</button>
+      <button class="btn alt small" id="bNewCode" type="button">Новый код</button>
+      <button class="btn alt small" id="bResend" type="button">Отправить состояние ещё раз</button>
+    </div>
+    <div class="net" id="netStat">Связь с игроками: ещё не отправляли.</div>
+  </section>
+
+  <section class="live">
+    <div class="sheet">
+      <div class="label">Что сейчас на экране зала</div>
+      <div class="prev"><div id="prevHost" style="position:absolute;inset:0"></div></div>
+      <div class="row">
+        <button class="btn red" id="bHide" type="button">Убрать с экрана</button>
+        <span class="hint" id="nowName"></span>
+      </div>
+    </div>
+    <div class="sheet">
+      <h2>Настройки</h2>
+      <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="f"><label class="label" for="cP1">До перерыва, мин</label><input type="number" id="cP1" min="1" max="300" inputmode="numeric"></div>
+        <div class="f"><label class="label" for="cBr">Перерыв, мин</label><input type="number" id="cBr" min="0" max="120" inputmode="numeric"></div>
+        <div class="f"><label class="label" for="cP2">После перерыва, мин</label><input type="number" id="cP2" min="1" max="300" inputmode="numeric"></div>
+      </div>
+      <label class="row"><input type="checkbox" id="cTimer"> <span>Показывать таймер в углу экрана зала</span></label>
+      <label class="row"><input type="checkbox" id="cClear"> <span>Убирать заставку при старте игры</span></label>
+      <div class="f"><label class="label" for="cIdleBg">Фон экрана, когда ничего не показано</label>
+        <select id="cIdleBg"><option value="wall">Стена кабинета</option><option value="night">Ночной город</option><option value="paper">Бумага</option><option value="red">Красный</option></select></div>
+      <div class="thumb" id="idleImgBox"></div>
+      <div class="f"><label class="label" for="cUrl">Адрес сайта игроков</label><input type="text" id="cUrl" autocomplete="off" spellcheck="false"></div>
+      <div class="row"><button class="btn alt small" id="bResetAll" type="button">Вернуть заготовки</button><span class="hint" id="resetMsg"></span></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="row" style="justify-content:space-between"><h2>Заставки</h2><button class="btn alt small" id="addScene" type="button">Добавить заставку</button></div>
+    <div class="grid" id="listScenes"></div>
+  </section>
+
+  <section class="sheet">
+    <div class="row" style="justify-content:space-between"><h2>Подсказки</h2><button class="btn alt small" id="addHint" type="button">Добавить подсказку</button></div>
+    <p class="hint">Время подсказки считается по игровому времени, перерыв не входит. Когда время подходит, карточка подсвечивается. На экран зала подсказка выходит только по вашей кнопке. На сайт игроков подсказки не передаются.</p>
+    <div class="grid" id="listHints"></div>
+  </section>
+
+  <p class="hint">Всё хранится в этом браузере. Картинки сжимаются до 1920 пикселей. Чтобы экран открылся в отдельном окне на проекторе, запускайте панель на ноутбуке ведущего.</p>
+</div>
+
+<div class="fs" id="fs" hidden>
+  <div class="stage" id="stage"></div>
+  <div class="ctrl" id="ctrl">
+    <button class="btn small" id="fPrev" type="button">Предыдущая</button>
+    <button class="btn small" id="fNext" type="button">Следующая подсказка</button>
+    <button class="btn small red" id="fHide" type="button">Убрать</button>
+    <button class="btn small alt" id="fClose" type="button" style="color:#efe6c8;border-color:#efe6c8">Закрыть (Esc)</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ============ ЗАГОТОВКИ ============ */
+const KEY='case1-host-v2';
+const PLAYER_URL='https://azamat220562-a11y.github.io/quiet-bookkeeping/';
+const defaults=()=>({
+  cfg:{p1:60,br:15,p2:60,showTimer:true,clearOnStart:true,idleBg:'wall',idleImg:'',playerUrl:PLAYER_URL},
+  code:'',
+  scenes:[
+    {id:'join',kind:'scene',role:'join',name:'Код игры и QR',kicker:'Заходите на сайт',title:'Код игры',sub:'',text:'',bg:'night',img:''},
+    {id:'intro',kind:'scene',role:'intro',name:'Начальная заставка',kicker:'Полиция Фэрхейвена · Дело № 1956-11-06',title:'Тихая бухгалтерия',sub:'Вторник, 6 ноября 1956',text:'В 06:10 ночной сторож нашёл в конторе склада №4 тело главного бухгалтера Эвелин Рэйн. Один выстрел. Оружия на месте нет.\nВ городе выборы, и мэр хочет закрыть дело сегодня.',bg:'wall',img:''},
+    {id:'brk',kind:'scene',role:'break',name:'Перерыв',kicker:'Перерыв',title:'Вернёмся через',sub:'',text:'Не обсуждайте дело с другими командами. Бумаги остаются на столах.',bg:'night',img:''},
+    {id:'fin',kind:'scene',role:'finale',name:'Финал',kicker:'Время вышло',title:'Спасибо за игру',sub:'',text:'Итоги объявит ведущий.',bg:'red',img:''}
+  ],
+  hints:[
+    {id:'h1',name:'Подсказка 1',time:15,text:'Не у всякого, у кого есть мотив, нет алиби. Посмотрите, где был каждый подозреваемый в понедельник в 22 часа.',bg:'wall',img:''},
+    {id:'h2',name:'Подсказка 2',time:30,text:'Тело нашли в конторе, но там мало крови. Что говорит коронер о месте убийства?',bg:'wall',img:''},
+    {id:'h3',name:'Подсказка 3',time:45,text:'Прочитайте газету целиком. Объявления тоже улики.',bg:'wall',img:''},
+    {id:'h4',name:'Подсказка 4',time:60,text:'Револьвер найден у Дэнни, но куплен не им. Где продают оружие?',bg:'wall',img:''},
+    {id:'h5',name:'Подсказка 5',time:75,text:'В журнале ломбарда адрес покупателя никому из участников не принадлежит. Проверьте, чей он.',bg:'wall',img:''},
+    {id:'h6',name:'Подсказка 6',time:90,text:'Сопоставьте тетрадь Эвелин и журнал смен. Кто стоял на всех шести ночах?',bg:'wall',img:''},
+    {id:'h7',name:'Подсказка 7',time:105,text:'Бармен помнит не только драку. Спросите, кто и когда выходил.',bg:'wall',img:''}
+  ],
+  run:{state:'idle',t0:0,acc:0,pausedAt:0,breakDone:false},
+  show:null,
+  shown:[]
+});
+let ST=load();
+function load(){
+  try{const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);const d=defaults();return Object.assign(d,o,{cfg:Object.assign(d.cfg,o.cfg||{}),run:Object.assign(d.run,o.run||{})});}}catch(e){}
+  return defaults();
+}
+const bc=('BroadcastChannel' in window)?new BroadcastChannel('case1-host'):null;
+function save(){
+  let json;
+  try{json=JSON.stringify(ST);localStorage.setItem(KEY,json);}
+  catch(e){setNote('Не хватило места в браузере: уменьшите число картинок. Настройки не сохранены.');}
+  try{if(bc&&json)bc.postMessage(json);}catch(e){}
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function setNote(t){const n=$('winNote');if(!n)return;n.textContent=t||'';n.hidden=!t;}
+
+/* ============ ЗВУК ============ */
+const Sfx=(function(){
+  let ctx=null,master=null,on=true;
+  try{const v=localStorage.getItem('fh-host-snd');if(v!==null)on=v==='1';}catch(e){}
+  function ac(){if(!ctx){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;ctx=new A();master=ctx.createGain();master.gain.value=.6;master.connect(ctx.destination);}if(ctx.state==='suspended')ctx.resume();return ctx;}
+  function env(g,t,a,d,pk){g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(pk,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d);}
+  function tone(c,t,f,type,a,d,pk,f2){const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+a+d);env(g,t,a,d,pk);o.connect(g);g.connect(master);o.start(t);o.stop(t+a+d+.05);}
+  const fx={
+    bell(c,t){[[880,.5],[1320,.25],[1760,.12]].forEach(([f,p])=>tone(c,t,f,'sine',.003,1.2,p*.8));},
+    gong(c,t){[[110,.6],[165,.35],[220,.3],[331,.15]].forEach(([f,p])=>tone(c,t,f,'sine',.01,3,p*.9));},
+    phone(c,t){for(let k=0;k<3;k++){const b=t+k*.55;tone(c,b,440,'sine',.01,.22,.4);tone(c,b,480,'sine',.01,.22,.4);}},
+    stamp(c,t){tone(c,t,150,'sine',.004,.28,.9,42);}
+  };
+  return {get on(){return on;},set(v){on=!!v;try{localStorage.setItem('fh-host-snd',on?'1':'0');}catch(e){}if(on)ac();},unlock(){ac();},
+    play(n){if(!on)return;try{const c=ac();if(c&&fx[n])fx[n](c,c.currentTime+.01);}catch(e){}}};
+})();
+function syncSnd(){const b=$('btnSnd');b.textContent='Звук: '+(Sfx.on?'вкл':'выкл');b.setAttribute('aria-pressed',Sfx.on?'true':'false');}
+
+/* ============ СВЯЗЬ С ИГРОКАМИ (ntfy.sh) ============ */
+const NT='https://ntfy.sh/';
+const CODE_CHARS='abcdefghjkmnpqrstuvwxyz23456789';
+function newCode(){let c='';for(let i=0;i<5;i++)c+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];return c;}
+function netState(){const r=ST.run.state;return r==='running'?'running':r==='paused'?'paused':r==='ended'?'ended':'waiting';}
+let lastPub=0;
+async function publish(){
+  if(!ST.code)return;
+  const msg=JSON.stringify({v:1,s:netState(),t:Date.now()});
+  const el=$('netStat');
+  try{
+    const r=await fetch(NT+'fh1956-'+ST.code,{method:'POST',body:msg});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    lastPub=Date.now();
+    el.className='net ok';el.textContent='Связь с игроками: статус «'+({waiting:'ждём',running:'идёт игра',paused:'перерыв',ended:'игра окончена'}[netState()])+'» отправлен в '+new Date(lastPub).toLocaleTimeString('ru-RU');
+  }catch(e){
+    el.className='net bad';el.textContent='Нет связи с сервером ntfy.sh. Статус не отправлен. Проверьте интернет и нажмите «Отправить состояние ещё раз».';
+  }
+}
+function joinUrl(){const u=(ST.cfg.playerUrl||PLAYER_URL);return u+(u.includes('?')?'&':'?')+'g='+ST.code;}
+
+/* ============ ИГРА ============ */
+const dur=k=>({p1:ST.cfg.p1,br:ST.cfg.br,p2:ST.cfg.p2}[k]||0)*60000;
+const totalMs=()=>(ST.cfg.p1+ST.cfg.p2)*60000;
+const elapsed=r=>r.state==='running'?r.acc+(Date.now()-r.t0):r.acc;
+function brkLeft(r){return Math.max(0,dur('br')-(Date.now()-r.pausedAt));}
+const fmt=ms=>{ms=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');};
+function sceneByRole(role){return ST.scenes.find(s=>s.role===role);}
+function startGame(){
+  ST.run={state:'running',t0:Date.now(),acc:0,pausedAt:0,breakDone:false};ST.shown=[];
+  if(ST.cfg.clearOnStart)ST.show=null;
+  Sfx.unlock();Sfx.play('bell');save();publish();refresh();
+}
+function pauseGame(){
+  const r=ST.run;if(r.state!=='running')return;
+  r.acc=elapsed(r);r.state='paused';r.pausedAt=Date.now();
+  if(elapsed(r)>=dur('p1'))r.breakDone=true;
+  const s=sceneByRole('break');if(s)ST.show={type:'scene',id:s.id};
+  Sfx.play('gong');save();publish();refresh();
+}
+function resumeGame(){
+  const r=ST.run;if(r.state!=='paused')return;
+  r.t0=Date.now();r.state='running';
+  const s=sceneByRole('break');if(s&&ST.show&&ST.show.type==='scene'&&ST.show.id===s.id)ST.show=null;
+  Sfx.play('bell');save();publish();refresh();
+}
+function endGame(){
+  const r=ST.run;if(r.state!=='running'&&r.state!=='paused')return;
+  r.acc=elapsed(r);r.state='ended';
+  const s=sceneByRole('finale');if(s)ST.show={type:'scene',id:s.id};
+  Sfx.play('gong');setTimeout(()=>Sfx.play('gong'),1800);save();publish();refresh();
+}
+function gameMin(){return elapsed(ST.run)/60000;}
+
+/* ============ ЭКРАН ЗАЛА ============ */
+function sceneOf(st){
+  const sh=st.show;if(!sh)return null;
+  if(sh.type==='scene')return st.scenes.find(s=>s.id===sh.id)||null;
+  const i=st.hints.findIndex(h=>h.id===sh.id);return i<0?null:Object.assign({},st.hints[i],{n:i+1});
+}
+function timerText(st){
+  const r=st.run;
+  if(r.state==='idle')return '';
+  if(r.state==='ended')return 'Время вышло';
+  const total=(st.cfg.p1+st.cfg.p2)*60000;
+  if(r.state==='paused')return 'Перерыв '+fmt(Math.max(0,st.cfg.br*60000-(Date.now()-r.pausedAt)));
+  return fmt(total-(r.acc+(Date.now()-r.t0)));
+}
+function renderScreen(host,st){
+  const sc=sceneOf(st);
+  const bg=sc?sc.bg:st.cfg.idleBg;
+  const img=sc?sc.img:st.cfg.idleImg;
+  let inner='';
+  if(!sc){
+    inner='<div class="in"><div class="k">Полиция Фэрхейвена</div><h1>Тихая бухгалтерия</h1><div class="rule"></div><h3>Дело № 1956-11-06</h3></div>';
+  }else if(sc.role==='join'){
+    inner='<div class="in"><div class="k">'+esc(sc.kicker)+'</div><div class="codebig">'+esc(st.code)+'</div><div class="qr" data-qr></div><div class="url">'+esc(joinUrlOf(st))+'</div></div>';
+  }else if(sc.kind==='scene'||sc.role){
+    const isBreak=sc.role==='break';
+    inner='<div class="in">'+(sc.kicker?'<div class="k">'+esc(sc.kicker)+'</div>':'')
+      +(sc.title?'<h1>'+esc(sc.title)+'</h1>':'')
+      +(sc.sub?'<h3>'+esc(sc.sub)+'</h3>':'')
+      +(isBreak?'<div class="big" data-brk>'+esc(timerText(st).replace('Перерыв ',''))+'</div>':'')
+      +(sc.text?'<p>'+esc(sc.text)+'</p>':'')+'</div>';
+  }else{
+    inner='<div class="in"><div class="stampbig">'+esc(sc.name||('Подсказка '+sc.n))+'</div><div class="hintcard"><p>'+esc(sc.text)+'</p></div></div>';
+  }
+  const tt=st.cfg.showTimer?timerText(st):'';
+  const chip=tt&&!(sc&&sc.role==='break'&&st.run.state==='paused')?'<div class="chip" data-chip>'+esc(tt)+'</div>':'';
+  const cls='scr bg-'+bg+(img?' has-img':'');
+  const style=img?'background-image:url('+JSON.stringify(img)+');':'';
+  const sig=cls+'|'+style.length+'|'+inner;
+  if(host._sig!==sig){
+    host.innerHTML='<div class="'+cls+'" style=\''+style.replace(/'/g,'%27')+'\'>'+inner+chip+'</div>';host._sig=sig;
+    const q=host.querySelector('[data-qr]');
+    if(q&&window.QRCode){try{new QRCode(q,{text:joinUrlOf(st),width:256,height:256,correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
+  }else{
+    const c=host.querySelector('[data-chip]');if(c)c.textContent=tt;
+    const b=host.querySelector('[data-brk]');if(b)b.textContent=timerText(st).replace('Перерыв ','');
+  }
+}
+function joinUrlOf(st){const u=(st.cfg.playerUrl||PLAYER_URL);return u+(u.includes('?')?'&':'?')+'g='+st.code;}
+
+/* ============ ПАНЕЛЬ ============ */
+function refresh(){
+  const r=ST.run,e=elapsed(r),total=totalMs(),p1=dur('p1');
+  const part=e<p1?'Часть 1':'Часть 2';
+  let phaseHtml='',clock='',sub='',fill=0,ban='';
+  if(r.state==='idle'){phaseHtml='Игра не начата';clock=fmt(total);}
+  else if(r.state==='running'){
+    phaseHtml='<b>Идёт игра</b> · '+part;clock=fmt(total-e);fill=Math.min(100,e/total*100);
+    sub='Прошло игрового времени: '+fmt(e)+' из '+fmt(total);
+    if(!r.breakDone&&e<p1)sub+=' · до перерыва по плану: '+fmt(p1-e);
+    if(!r.breakDone&&e>=p1)ban='Прошло '+ST.cfg.p1+' минут. Когда будете готовы к перерыву, нажмите «Приостановить».';
+    if(e>=total)ban='Игровое время вышло. Нажмите «Закончить», когда решите завершить игру.';
+  }else if(r.state==='paused'){
+    phaseHtml='<b>Перерыв</b> · игра остановлена';clock=fmt(brkLeft(r));fill=Math.min(100,e/total*100);
+    sub='Таймер перерыва '+ST.cfg.br+' мин. Игровое время: '+fmt(e);
+    if(brkLeft(r)<=0)ban='Время перерыва вышло. Нажмите «Продолжить», когда все вернутся.';
+  }else{phaseHtml='Игра окончена';clock='00:00';fill=100;sub='Игровое время: '+fmt(e);}
+  $('phase').innerHTML=phaseHtml;$('clock').textContent=clock;$('subClock').textContent=sub;$('barFill').style.width=fill+'%';
+  const b=$('banner');b.hidden=!ban;b.textContent=ban;
+  $('bStart').hidden=!(r.state==='idle'||r.state==='ended');$('bStart').textContent=r.state==='ended'?'Начать заново':'Начать игру';
+  $('bPause').hidden=!(r.state==='running'||r.state==='paused');$('bPause').textContent=r.state==='paused'?'Продолжить':'Приостановить';
+  $('bPause').className='btn big'+(r.state==='paused'?' green':'');
+  $('bEnd').hidden=!(r.state==='running'||r.state==='paused');
+  $('stateHint').textContent={idle:'У игроков сейчас экран «Дело ещё не поступило». После «Начать игру» сайт откроется.',running:'Сайт открыт. «Приостановить» закроет его на перерыв.',paused:'Сайт закрыт, у игроков «Перерыв». «Продолжить» откроет его.',ended:'Сайт закрыт, у игроков «Спасибо за игру».'}[r.state];
+  const g=gameMin();
+  document.querySelectorAll('.card[data-hint]').forEach(c=>{
+    const h=ST.hints.find(x=>x.id===c.dataset.hint);if(!h)return;
+    const shown=ST.shown.includes(h.id),on=ST.show&&ST.show.type==='hint'&&ST.show.id===h.id;
+    const due=!shown&&(r.state==='running'||r.state==='paused')&&g>=h.time-0.001;
+    c.classList.toggle('due',due);c.classList.toggle('live-now',!!on);
+    const t=c.querySelector('[data-tag]');t.className='tagp'+(on?' now':due?' due':'');
+    t.textContent=on?'на экране':shown?'показана':due?'пора показать':'ждёт';
+  });
+  document.querySelectorAll('.card[data-scene]').forEach(c=>{
+    const on=ST.show&&ST.show.type==='scene'&&ST.show.id===c.dataset.scene;
+    c.classList.toggle('live-now',!!on);
+    const t=c.querySelector('[data-tag]');t.className='tagp'+(on?' now':'');t.textContent=on?'на экране':'';
+  });
+  const sc=sceneOf(ST);
+  $('nowName').textContent=sc?('Сейчас: '+(sc.name||sc.title||'')):'Сейчас: общий фон';
+  $('codeText').textContent=ST.code||'-----';$('joinUrl').value=ST.code?joinUrl():'';
+  renderScreen($('prevHost'),ST);
+  if(!$('fs').hidden)renderScreen($('stage'),ST);
+}
+function field(label,html){return '<div class="f"><span class="label">'+label+'</span>'+html+'</div>';}
+function bgOpts(v){return ['wall:Стена','night:Ночь','paper:Бумага','red:Красный'].map(x=>{const[a,b]=x.split(':');return '<option value="'+a+'"'+(a===v?' selected':'')+'>'+b+'</option>';}).join('');}
+function imgBox(it){
+  return '<div class="thumb">'+(it.img?'<img alt="" src="'+esc(it.img)+'">':'<span class="hint">Картинки нет, будет фон</span>')
+    +'<label class="btn alt small" style="cursor:pointer">Картинка<input type="file" accept="image/*" data-img style="display:none"></label>'
+    +(it.img?'<button class="btn alt small" data-k2="noimg" type="button">Убрать</button>':'')+'</div>';
+}
+function cardScene(s){
+  const fixed=s.role==='join';
+  return '<div class="card" data-scene="'+s.id+'"><div class="head"><span class="tagp" data-tag></span>'
+   +'<div class="row"><button class="btn small" data-act="show" type="button">Показать на экране</button>'
+   +(s.role?'':'<button class="btn alt small" data-act="del" type="button">Удалить</button>')+'</div></div>'
+   +field('Название в списке','<input type="text" data-k="name" value="'+esc(s.name)+'">')
+   +field('Надпись сверху','<input type="text" data-k="kicker" value="'+esc(s.kicker)+'">')
+   +(fixed?'<p class="hint">Код и QR подставляются сами.</p>':
+     field('Заголовок','<input type="text" data-k="title" value="'+esc(s.title)+'">')
+    +field('Подзаголовок','<input type="text" data-k="sub" value="'+esc(s.sub)+'">')
+    +field('Текст','<textarea data-k="text">'+esc(s.text)+'</textarea>'))
+   +field('Фон','<select data-k="bg">'+bgOpts(s.bg)+'</select>')+imgBox(s)+'</div>';
+}
+function cardHint(h){
+  return '<div class="card" data-hint="'+h.id+'"><div class="head"><span class="tagp" data-tag></span>'
+   +'<div class="row"><button class="btn small" data-act="show" type="button">Показать на экране</button>'
+   +'<button class="btn alt small" data-act="del" type="button">Удалить</button></div></div>'
+   +'<div class="two">'+field('Название','<input type="text" data-k="name" value="'+esc(h.name)+'">')
+   +field('Минута игры','<input type="number" data-k="time" min="0" max="600" inputmode="numeric" value="'+esc(h.time)+'">')+'</div>'
+   +field('Текст подсказки','<textarea data-k="text">'+esc(h.text)+'</textarea>')
+   +field('Фон','<select data-k="bg">'+bgOpts(h.bg)+'</select>')+imgBox(h)+'</div>';
+}
+function renderLists(){
+  $('listScenes').innerHTML=ST.scenes.map(cardScene).join('');
+  $('listHints').innerHTML=ST.hints.map(cardHint).join('');
+  idleImgUI();refresh();
+}
+function idleImgUI(){
+  const b=$('idleImgBox');
+  b.innerHTML=(ST.cfg.idleImg?'<img alt="" src="'+esc(ST.cfg.idleImg)+'">':'<span class="hint">Своя картинка не выбрана</span>')
+    +'<label class="btn alt small" style="cursor:pointer">Картинка фона<input type="file" accept="image/*" id="idleFile" style="display:none"></label>'
+    +(ST.cfg.idleImg?'<button class="btn alt small" id="idleNo" type="button">Убрать</button>':'');
+  $('idleFile').addEventListener('change',e=>readImg(e.target.files[0],d=>{ST.cfg.idleImg=d;save();idleImgUI();refresh();}));
+  const n=$('idleNo');if(n)n.addEventListener('click',()=>{ST.cfg.idleImg='';save();idleImgUI();refresh();});
+}
+function readImg(file,cb){
+  if(!file)return;
+  const fr=new FileReader();
+  fr.onload=()=>{const im=new Image();im.onload=()=>{
+    const m=1920,k=Math.min(1,m/Math.max(im.width,im.height));
+    const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    cb(c.toDataURL('image/jpeg',.82));
+  };im.onerror=()=>setNote('Не удалось открыть картинку.');im.src=fr.result;};
+  fr.readAsDataURL(file);
+}
+function itemOf(card){
+  if(card.dataset.scene)return {list:ST.scenes,it:ST.scenes.find(x=>x.id===card.dataset.scene),type:'scene'};
+  return {list:ST.hints,it:ST.hints.find(x=>x.id===card.dataset.hint),type:'hint'};
+}
+function showItem(type,id){
+  ST.show={type,id};
+  if(type==='hint'){if(!ST.shown.includes(id))ST.shown.push(id);Sfx.play('bell');}
+  save();refresh();
+}
+document.addEventListener('input',e=>{
+  const card=e.target.closest&&e.target.closest('.card');
+  if(card&&e.target.dataset.k){
+    const {it}=itemOf(card);if(!it)return;
+    let v=e.target.value;if(e.target.dataset.k==='time')v=Number(v)||0;
+    it[e.target.dataset.k]=v;save();refresh();
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.img!==undefined){
+    const card=t.closest('.card');const {it}=itemOf(card);
+    readImg(t.files[0],d=>{it.img=d;save();renderLists();});
+  }
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const card=b.closest('.card');
+  if(card&&b.dataset.act==='show'){const {type,it}=itemOf(card);showItem(type,it.id);return;}
+  if(card&&b.dataset.act==='del'){
+    if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Точно удалить?';return;}
+    const {list,it}=itemOf(card);list.splice(list.indexOf(it),1);
+    if(ST.show&&ST.show.id===it.id)ST.show=null;
+    save();renderLists();return;
+  }
+  if(card&&b.dataset.k2==='noimg'){const {it}=itemOf(card);it.img='';save();renderLists();return;}
+});
+$('addScene').addEventListener('click',()=>{ST.scenes.push({id:'s'+Date.now(),kind:'scene',role:'',name:'Новая заставка',kicker:'',title:'Заголовок',sub:'',text:'',bg:'wall',img:''});save();renderLists();});
+$('addHint').addEventListener('click',()=>{const n=ST.hints.length+1;const last=ST.hints[ST.hints.length-1];ST.hints.push({id:'h'+Date.now(),name:'Подсказка '+n,time:last?last.time+15:15,text:'',bg:'wall',img:''});save();renderLists();});
+
+/* кнопки управления игрой */
+$('bStart').addEventListener('click',startGame);
+$('bPause').addEventListener('click',()=>{ST.run.state==='paused'?resumeGame():pauseGame();});
+$('bEnd').addEventListener('click',()=>{
+  const b=$('bEnd');
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Точно закончить?';setTimeout(()=>{b.dataset.armed='';b.textContent='Закончить';},3500);return;}
+  b.dataset.armed='';b.textContent='Закончить';endGame();
+});
+$('btnSnd').addEventListener('click',()=>{Sfx.set(!Sfx.on);syncSnd();Sfx.play('bell');});
+$('bHide').addEventListener('click',()=>{ST.show=null;save();refresh();});
+
+/* код игры */
+$('bCopy').addEventListener('click',async()=>{
+  const u=joinUrl();
+  try{await navigator.clipboard.writeText(u);$('bCopy').textContent='Скопировано';}catch(e){$('joinUrl').select();$('bCopy').textContent='Выделено, нажмите Ctrl+C';}
+  setTimeout(()=>{$('bCopy').textContent='Скопировать ссылку';},2200);
+});
+$('bShowCode').addEventListener('click',()=>{const s=sceneByRole('join');if(s)showItem('scene',s.id);});
+$('bNewCode').addEventListener('click',()=>{
+  const b=$('bNewCode');
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Старые ссылки перестанут работать. Ещё раз?';setTimeout(()=>{b.dataset.armed='';b.textContent='Новый код';},4000);return;}
+  b.dataset.armed='';b.textContent='Новый код';
+  ST.code=newCode();save();publish();refresh();
+});
+$('bResend').addEventListener('click',publish);
+
+$('bResetAll').addEventListener('click',()=>{const b=$('bResetAll');if(b.dataset.armed!=='1'){b.dataset.armed='1';$('resetMsg').textContent='Заготовки вернутся, ваши тексты, картинки и таймер пропадут. Нажмите ещё раз.';return;}const keep=ST.code;ST=defaults();ST.code=keep;save();b.dataset.armed='';$('resetMsg').textContent='';bindCfg();renderLists();publish();});
+function bindCfg(){
+  $('cP1').value=ST.cfg.p1;$('cBr').value=ST.cfg.br;$('cP2').value=ST.cfg.p2;
+  $('cTimer').checked=ST.cfg.showTimer;$('cClear').checked=ST.cfg.clearOnStart;$('cIdleBg').value=ST.cfg.idleBg;$('cUrl').value=ST.cfg.playerUrl||PLAYER_URL;
+}
+[['cP1','p1'],['cBr','br'],['cP2','p2']].forEach(([id,k])=>$(id).addEventListener('input',e=>{const v=Number(e.target.value);if(v>=0){ST.cfg[k]=v;save();refresh();}}));
+$('cTimer').addEventListener('change',e=>{ST.cfg.showTimer=e.target.checked;save();refresh();});
+$('cClear').addEventListener('change',e=>{ST.cfg.clearOnStart=e.target.checked;save();});
+$('cIdleBg').addEventListener('change',e=>{ST.cfg.idleBg=e.target.value;save();refresh();});
+$('cUrl').addEventListener('input',e=>{ST.cfg.playerUrl=e.target.value.trim();save();refresh();});
+
+/* ============ ПОЛНЫЙ ЭКРАН И ОКНО ============ */
+function openFs(){
+  $('fs').hidden=false;renderScreen($('stage'),ST);Sfx.unlock();
+  try{const r=$('fs').requestFullscreen&&$('fs').requestFullscreen();if(r&&r.catch)r.catch(()=>{});}catch(e){}
+  $('fClose').focus();
+}
+function closeFs(){$('fs').hidden=true;try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}}
+$('btnFull').addEventListener('click',openFs);
+$('fClose').addEventListener('click',closeFs);
+$('fHide').addEventListener('click',()=>{ST.show=null;save();refresh();});
+function hintStep(d){
+  const cur=ST.show&&ST.show.type==='hint'?ST.hints.findIndex(h=>h.id===ST.show.id):-1;
+  let n=cur+d;
+  if(cur<0&&d>0){const next=ST.hints.findIndex(h=>!ST.shown.includes(h.id));n=next<0?0:next;}
+  n=Math.max(0,Math.min(ST.hints.length-1,n));
+  if(ST.hints[n])showItem('hint',ST.hints[n].id);
+}
+$('fNext').addEventListener('click',()=>hintStep(1));
+$('fPrev').addEventListener('click',()=>hintStep(-1));
+document.addEventListener('keydown',e=>{
+  if($('fs').hidden||document.body.classList.contains('screenmode'))return;
+  if(e.key==='Escape')closeFs();
+  else if(e.key==='ArrowRight')hintStep(1);
+  else if(e.key==='ArrowLeft')hintStep(-1);
+  else if(e.key===' '||e.key==='Backspace'){e.preventDefault();ST.show=null;save();refresh();}
+});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&!$('fs').hidden&&!document.body.classList.contains('screenmode'))closeFs();});
+$('btnWin').addEventListener('click',()=>{
+  let w=null;
+  try{w=window.open(location.href.split('#')[0]+'#screen','case1-screen','popup,width=1280,height=720');}catch(e){}
+  setNote(w?'':'Браузер не открыл окно. Разрешите всплывающие окна для этой страницы или нажмите «На весь экран здесь».');
+});
+
+/* ============ ЗАПУСК ============ */
+const SCREEN=location.hash==='#screen';
+if(SCREEN){
+  document.body.classList.add('screenmode');
+  $('fs').hidden=false;$('ctrl').style.display='none';
+  const rerender=()=>renderScreen($('stage'),ST);
+  if(bc)bc.onmessage=ev=>{try{ST=Object.assign(defaults(),JSON.parse(ev.data));rerender();}catch(e){}};
+  window.addEventListener('storage',e=>{if(e.key===KEY){ST=load();rerender();}});
+  setInterval(rerender,500);rerender();
+  document.addEventListener('click',()=>{try{document.documentElement.requestFullscreen();}catch(e){}});
+}else{
+  if(!ST.code){ST.code=newCode();save();}
+  syncSnd();bindCfg();renderLists();
+  setInterval(refresh,250);
+  setInterval(publish,90000);
+  setTimeout(publish,600);
+  window.addEventListener('storage',e=>{if(e.key===KEY){ST=load();refresh();}});
+}
+</script>
+
+</body></html>
