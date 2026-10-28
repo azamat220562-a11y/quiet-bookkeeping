@@ -130,7 +130,9 @@ body.screenmode .fs{display:block}
     <div class="banner" id="banner" hidden></div>
     <div class="row">
       <button class="btn big green" id="bStart" type="button">Начать игру</button>
+      <button class="btn big alt" id="bReset" type="button" hidden>Сбросить игру</button>
       <button class="btn big" id="bPause" type="button" hidden>Приостановить</button>
+      <button class="btn big alt" id="bHold" type="button" hidden>Пауза таймера</button>
       <button class="btn big red" id="bEnd" type="button" hidden>Закончить</button>
     </div>
     <div class="hint" id="stateHint">До начала игры у игроков экран «Дело ещё не поступило».</div>
@@ -226,7 +228,7 @@ const defaults=()=>({
     {id:'h6',name:'Подсказка 6',time:90,text:'Сопоставьте тетрадь Эвелин и журнал смен. Кто стоял на всех шести ночах?',bg:'wall',img:''},
     {id:'h7',name:'Подсказка 7',time:105,text:'Бармен помнит не только драку. Спросите, кто и когда выходил.',bg:'wall',img:''}
   ],
-  run:{state:'idle',t0:0,acc:0,pausedAt:0,breakDone:false},
+  run:{state:'idle',t0:0,acc:0,pausedAt:0,breakDone:false,hold:false},
   show:null,
   shown:[]
 });
@@ -288,33 +290,48 @@ function joinUrl(){const u=(ST.cfg.playerUrl||PLAYER_URL);return u+(u.includes('
 /* ============ ИГРА ============ */
 const dur=k=>({p1:ST.cfg.p1,br:ST.cfg.br,p2:ST.cfg.p2}[k]||0)*60000;
 const totalMs=()=>(ST.cfg.p1+ST.cfg.p2)*60000;
-const elapsed=r=>r.state==='running'?r.acc+(Date.now()-r.t0):r.acc;
+const elapsed=r=>r.state==='running'&&!r.hold?r.acc+(Date.now()-r.t0):r.acc;
 function brkLeft(r){return Math.max(0,dur('br')-(Date.now()-r.pausedAt));}
 const fmt=ms=>{ms=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');};
 function sceneByRole(role){return ST.scenes.find(s=>s.role===role);}
 function startGame(){
-  ST.run={state:'running',t0:Date.now(),acc:0,pausedAt:0,breakDone:false};ST.shown=[];
+  ST.run={state:'running',t0:Date.now(),acc:0,pausedAt:0,breakDone:false,hold:false};ST.shown=[];
   if(ST.cfg.clearOnStart)ST.show=null;
   Sfx.unlock();Sfx.play('bell');save();publish();refresh();
 }
 function pauseGame(){
   const r=ST.run;if(r.state!=='running')return;
-  r.acc=elapsed(r);r.state='paused';r.pausedAt=Date.now();
+  r.acc=elapsed(r);r.state='paused';r.hold=false;r.pausedAt=Date.now();
   if(elapsed(r)>=dur('p1'))r.breakDone=true;
   const s=sceneByRole('break');if(s)ST.show={type:'scene',id:s.id};
   Sfx.play('gong');save();publish();refresh();
 }
 function resumeGame(){
   const r=ST.run;if(r.state!=='paused')return;
-  r.t0=Date.now();r.state='running';
+  r.t0=Date.now();r.state='running';r.hold=false;
   const s=sceneByRole('break');if(s&&ST.show&&ST.show.type==='scene'&&ST.show.id===s.id)ST.show=null;
   Sfx.play('bell');save();publish();refresh();
 }
 function endGame(){
   const r=ST.run;if(r.state!=='running'&&r.state!=='paused')return;
-  r.acc=elapsed(r);r.state='ended';
+  r.acc=elapsed(r);r.state='ended';r.hold=false;
   const s=sceneByRole('finale');if(s)ST.show={type:'scene',id:s.id};
   Sfx.play('gong');setTimeout(()=>Sfx.play('gong'),1800);save();publish();refresh();
+}
+/* пауза только таймера: сайт у игроков остаётся открытым, стоят игровое время и подсказки */
+function holdTimer(){
+  const r=ST.run;if(r.state!=='running'||r.hold)return;
+  r.acc=elapsed(r);r.hold=true;save();refresh();
+}
+function unholdTimer(){
+  const r=ST.run;if(r.state!=='running'||!r.hold)return;
+  r.t0=Date.now();r.hold=false;save();refresh();
+}
+/* вернуть игру в «не начата»: таймер в ноль, у игроков «Дело ещё не поступило», на экране зала код и QR */
+function resetRun(){
+  ST.run={state:'idle',t0:0,acc:0,pausedAt:0,breakDone:false,hold:false};ST.shown=[];
+  const s=sceneByRole('join');ST.show=s?{type:'scene',id:s.id}:null;
+  save();publish();refresh();
 }
 function gameMin(){return elapsed(ST.run)/60000;}
 
@@ -330,6 +347,7 @@ function timerText(st){
   if(r.state==='ended')return 'Время вышло';
   const total=(st.cfg.p1+st.cfg.p2)*60000;
   if(r.state==='paused')return 'Перерыв '+fmt(Math.max(0,st.cfg.br*60000-(Date.now()-r.pausedAt)));
+  if(r.hold)return 'Пауза '+fmt(total-r.acc);
   return fmt(total-(r.acc+(Date.now()-r.t0)));
 }
 function renderScreen(host,st){
@@ -379,6 +397,7 @@ function refresh(){
     if(!r.breakDone&&e<p1)sub+=' · до перерыва по плану: '+fmt(p1-e);
     if(!r.breakDone&&e>=p1)ban='Прошло '+ST.cfg.p1+' минут. Когда будете готовы к перерыву, нажмите «Приостановить».';
     if(e>=total)ban='Игровое время вышло. Нажмите «Закончить», когда решите завершить игру.';
+    if(r.hold){phaseHtml='<b>Таймер на паузе</b> · '+part;ban='Таймер остановлен, подсказки по времени не идут. Сайт у игроков открыт. Нажмите «Продолжить таймер».';}
   }else if(r.state==='paused'){
     phaseHtml='<b>Перерыв</b> · игра остановлена';clock=fmt(brkLeft(r));fill=Math.min(100,e/total*100);
     sub='Таймер перерыва '+ST.cfg.br+' мин. Игровое время: '+fmt(e);
@@ -390,7 +409,10 @@ function refresh(){
   $('bPause').hidden=!(r.state==='running'||r.state==='paused');$('bPause').textContent=r.state==='paused'?'Продолжить':'Приостановить';
   $('bPause').className='btn big'+(r.state==='paused'?' green':'');
   $('bEnd').hidden=!(r.state==='running'||r.state==='paused');
-  $('stateHint').textContent={idle:'У игроков сейчас экран «Дело ещё не поступило». После «Начать игру» сайт откроется.',running:'Сайт открыт. «Приостановить» закроет его на перерыв.',paused:'Сайт закрыт, у игроков «Перерыв». «Продолжить» откроет его.',ended:'Сайт закрыт, у игроков «Спасибо за игру».'}[r.state];
+  $('bHold').hidden=r.state!=='running';$('bHold').textContent=r.hold?'Продолжить таймер':'Пауза таймера';
+  $('bHold').className='btn big'+(r.hold?' green':' alt');
+  $('bReset').hidden=r.state!=='ended';
+  $('stateHint').textContent={idle:'У игроков сейчас экран «Дело ещё не поступило». После «Начать игру» сайт откроется.',running:r.hold?'Таймер стоит, сайт у игроков открыт. «Приостановить» закроет его на перерыв.':'Сайт открыт. «Пауза таймера» только останавливает часы, «Приостановить» закроет сайт на перерыв.',paused:'Сайт закрыт, у игроков «Перерыв». «Продолжить» откроет его.',ended:'Сайт закрыт, у игроков «Спасибо за игру». «Начать заново» запустит игру сразу, «Сбросить игру» вернёт к «не начата».'}[r.state];
   const g=gameMin();
   document.querySelectorAll('.card[data-hint]').forEach(c=>{
     const h=ST.hints.find(x=>x.id===c.dataset.hint);if(!h)return;
@@ -506,6 +528,12 @@ $('addHint').addEventListener('click',()=>{const n=ST.hints.length+1;const last=
 /* кнопки управления игрой */
 $('bStart').addEventListener('click',startGame);
 $('bPause').addEventListener('click',()=>{ST.run.state==='paused'?resumeGame():pauseGame();});
+$('bHold').addEventListener('click',()=>{ST.run.hold?unholdTimer():holdTimer();});
+$('bReset').addEventListener('click',()=>{
+  const b=$('bReset');
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Точно сбросить?';setTimeout(()=>{b.dataset.armed='';b.textContent='Сбросить игру';},3500);return;}
+  b.dataset.armed='';b.textContent='Сбросить игру';resetRun();
+});
 $('bEnd').addEventListener('click',()=>{
   const b=$('bEnd');
   if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Точно закончить?';setTimeout(()=>{b.dataset.armed='';b.textContent='Закончить';},3500);return;}
@@ -525,7 +553,7 @@ $('bNewCode').addEventListener('click',()=>{
   const b=$('bNewCode');
   if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Старые ссылки перестанут работать. Ещё раз?';setTimeout(()=>{b.dataset.armed='';b.textContent='Новый код';},4000);return;}
   b.dataset.armed='';b.textContent='Новый код';
-  ST.code=newCode();save();publish();refresh();
+  ST.code=newCode();resetRun();
 });
 $('bResend').addEventListener('click',publish);
 
