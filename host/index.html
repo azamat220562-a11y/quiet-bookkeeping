@@ -92,6 +92,11 @@ textarea{resize:vertical;min-height:84px;line-height:1.45}
 .scr .url{font-family:var(--f-type);font-size:2.2cqw;opacity:.9;word-break:break-all}
 .scr .chip{position:absolute;right:2cqw;bottom:1.6cqw;font-family:var(--f-label);letter-spacing:.14em;font-size:2.6cqw;padding:.4cqw 1.6cqw;background:rgba(0,0,0,.55);color:#efe6c8;border:.2cqw solid rgba(239,230,200,.6);font-variant-numeric:tabular-nums}
 .scr.bg-paper .chip{background:rgba(255,255,255,.6);color:#26231c;border-color:#26231c}
+.scr .rt{width:100%;border-collapse:collapse;font-family:var(--f-type);font-size:2.3cqw}
+.scr .rt th{font-family:var(--f-label);letter-spacing:.14em;text-transform:uppercase;font-size:1.7cqw;opacity:.8;padding:.5cqw 1cqw;text-align:left;border-bottom:.3cqw solid currentColor}
+.scr .rt td{padding:.7cqw 1cqw;border-bottom:.15cqw solid rgba(239,230,200,.3);text-align:left}
+.scr .rt .n{text-align:right;font-variant-numeric:tabular-nums}
+.scr .rt tr.top td{color:#f1d27a;font-weight:700}
 .scr .rule{width:30%;border-top:.4cqw double currentColor;opacity:.7}
 .fs{position:fixed;inset:0;z-index:1000;background:#000}
 .fs .stage{position:absolute;inset:0}
@@ -109,6 +114,17 @@ body.screenmode .fs{display:block}
 .tt th,.tt td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 .tt th{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
 .tcode{font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:.14em;white-space:nowrap}
+.res{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0}
+.res th,.res td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.res td.n,.res th.n{text-align:right;font-variant-numeric:tabular-nums}
+.ac{border:1px solid var(--line);border-radius:6px;margin:0 0 10px;padding:8px 10px}
+.ac h3{margin:0 0 6px;font-size:16px}
+.ac .qr{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.ac .qr .lbl{font-family:var(--f-label);letter-spacing:.06em;text-transform:uppercase;font-size:11px;color:var(--ink2)}
+.ac .gb{display:flex;gap:6px}
+.ac .gb button{min-width:84px}
+.ac .gb button.on-y{background:#2e6b3a;color:#fff;border-color:#2e6b3a}
+.ac .gb button.on-n{background:#9a2218;color:#fff;border-color:#9a2218}
 .tt details summary{cursor:pointer;color:var(--steel)}
 .tt .qa{margin:6px 0 0;font-size:13px}.tt .qa b{font-family:var(--f-label);letter-spacing:.06em;text-transform:uppercase;font-size:11px;color:var(--ink2)}
 </style>
@@ -175,6 +191,14 @@ body.screenmode .fs{display:block}
     <div id="teamsList"></div>
   </section>
 
+  <section class="sheet" aria-label="Ответы игроков" id="secAns">
+    <div class="row" style="justify-content:space-between"><h2>Ответы игроков</h2>
+      <div class="row"><button class="btn small" id="bResults" type="button">Показать результаты на экране</button></div></div>
+    <p class="hint">Отметьте каждый ответ «Верно» или «Неверно». Отметки видны всем, кто открыл пульт (ведущий и раннер). Баллы, места и гонорар считаются из них.</p>
+    <div id="resBox"></div>
+    <div id="ansList"></div>
+  </section>
+
   <section class="live">
     <div class="sheet">
       <div class="label">Что сейчас на экране зала</div>
@@ -190,6 +214,10 @@ body.screenmode .fs{display:block}
         <div class="f"><label class="label" for="cP1">До перерыва, мин</label><input type="number" id="cP1" min="1" max="300" inputmode="numeric"></div>
         <div class="f"><label class="label" for="cBr">Перерыв, мин</label><input type="number" id="cBr" min="0" max="120" inputmode="numeric"></div>
         <div class="f"><label class="label" for="cP2">После перерыва, мин</label><input type="number" id="cP2" min="1" max="300" inputmode="numeric"></div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="f"><label class="label" for="cRA">Гонорар за верный ответ, $</label><input type="number" id="cRA" min="0" step="50" inputmode="numeric"></div>
+        <div class="f"><label class="label" for="cRT">Расход на одну поездку, $</label><input type="number" id="cRT" min="0" step="5" inputmode="numeric"></div>
       </div>
       <label class="row"><input type="checkbox" id="cTimer"> <span>Показывать таймер в углу экрана зала</span></label>
       <label class="row"><input type="checkbox" id="cClear"> <span>Убирать заставку при старте игры</span></label>
@@ -233,7 +261,7 @@ body.screenmode .fs{display:block}
 const KEY='case1-host-v2';
 const PLAYER_URL='https://azamat220562-a11y.github.io/quiet-bookkeeping/';
 const defaults=()=>({
-  cfg:{p1:60,br:15,p2:60,showTimer:true,clearOnStart:true,idleBg:'wall',idleImg:'',playerUrl:PLAYER_URL},
+  cfg:{rateAns:500,rateTrip:20,p1:60,br:15,p2:60,showTimer:true,clearOnStart:true,idleBg:'wall',idleImg:'',playerUrl:PLAYER_URL},
   code:'',
   scenes:[
     {id:'join',kind:'scene',role:'join',name:'Код игры и QR',kicker:'Откройте ссылку и введите код своей команды',title:'Вход в дело',sub:'',text:'',bg:'night',img:''},
@@ -351,24 +379,61 @@ function renderGive(){
   gb.innerHTML='<div class="give"><h3>Выдать бумагу: '+q.length+'</h3>'+q.map(x=>'<div class="gi"><span>Команда <b>'+x[0].n+'</b> '+(x[0].name?'«'+esc(x[0].name)+'»':'')+' — приложение <b>'+x[1]+'</b>. '+esc(APPN[x[1]]||'')+'</span><button class="btn small" type="button" data-t="'+esc(x[0].id)+'" data-a="'+x[1]+'">Выдано</button></div>').join('')+'</div>';
 }
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.give button[data-t]');if(!b)return;ST.given=ST.given||{};const t=b.dataset.t,a=+b.dataset.a;(ST.given[t]=ST.given[t]||[]).push(a);save();renderGive();});
+const tName=t=>t.name?t.name:'Команда '+t.n;
+function gradesOf(t){const g=t.grades||{};let y=0,n=0;QLAB.forEach(q=>{if(g[q[0]]===true)y++;else if(g[q[0]]===false)n++;});return {y,n,left:QLAB.length-y-n};}
+function standings(){
+  const rows=TEAMS.map(t=>{const g=gradesOf(t),trips=(t.log||[]).length;
+    return {id:t.id,n:t.n,name:tName(t),pts:g.y,trips,fee:Math.max(0,g.y*(ST.cfg.rateAns||0)-trips*(ST.cfg.rateTrip||0)),started:!!t.name,graded:g.y+g.n};});
+  rows.sort((a,b)=>b.pts-a.pts||a.trips-b.trips||a.n-b.n);
+  rows.forEach((r,i)=>{r.place=(i&&rows[i-1].pts===r.pts&&rows[i-1].trips===r.trips)?rows[i-1].place:i+1;});
+  return rows;
+}
+const money=v=>'$'+Math.round(v).toLocaleString('en-US');
 function renderTeams(){
-  renderGive();
+  renderGive();renderAnswers();
   const box=$('teamsList');if(!box)return;
   $('bMake').hidden=TEAMS.length>0;$('tCount').hidden=TEAMS.length>0;document.querySelector('label[for=tCount]').hidden=TEAMS.length>0;
   $('bAddTeam').hidden=!TEAMS.length;$('bCopyCodes').hidden=!TEAMS.length;
   if(teamsErr){box.innerHTML='<p class="hint">Не удалось получить список команд: '+esc(teamsErr)+'</p>';return;}
   if(!TEAMS.length){box.innerHTML='<p class="hint">Команд пока нет. Укажите число и нажмите «Создать команды». У каждой будет свой код доступа: напишите его на бумажке и отдайте команде. Игроки открывают общую ссылку и вводят этот код.</p>';return;}
-  const open=new Set([...box.querySelectorAll('details[open]')].map(d=>d.dataset.id));
-  let h='<table class="tt"><thead><tr><th>№</th><th>Код</th><th>Название</th><th>Приложений</th><th>Запросов</th><th>Ответы</th></tr></thead><tbody>';
+  let h='<table class="tt"><thead><tr><th>№</th><th>Код</th><th>Название</th><th>Приложений</th><th>Поездок</th><th>Ответы</th></tr></thead><tbody>';
   TEAMS.forEach(t=>{
     const name=t.name?esc(t.name):'<span class="hint">ещё не вошли</span>';
-    const ans=t.ans?('<b>'+esc(t.score)+' из '+QLAB.length+'</b>'):'<span class="hint">не сданы</span>';
+    const ans=t.ans?'<b>сданы</b>':'<span class="hint">не сданы</span>';
     h+='<tr><td>'+t.n+'</td><td class="tcode">'+esc(t.id.toUpperCase())+'</td><td>'+name+'</td><td>'+(t.apps||[]).length+'</td><td>'+(t.log||[]).length+'</td><td>'+ans+'</td></tr>';
-    if(t.ans)h+='<tr><td colspan="6"><details data-id="'+esc(t.id)+'"'+(open.has(t.id)?' open':'')+'><summary>Ответы команды</summary>'+QLAB.map(q=>'<p class="qa"><b>'+q[1]+'</b><br>'+esc(t.ans[q[0]]||'без ответа')+'</p>').join('')+'</details></td></tr>';
   });
   box.innerHTML=h+'</tbody></table>';
+  syncResults();
 }
-
+/* вкладка проверки ответов: ведущий и раннер отмечают «верно/неверно», отметки лежат в документе команды */
+function renderAnswers(){
+  const box=$('ansList'),rb=$('resBox');if(!box)return;
+  if(!TEAMS.length){box.innerHTML='<p class="hint">Команд пока нет.</p>';rb.innerHTML='';return;}
+  const open=new Set([...box.querySelectorAll('details[open]')].map(d=>d.dataset.id));
+  box.innerHTML=TEAMS.filter(t=>t.ans).map(t=>{
+    const g=t.grades||{},c=gradesOf(t);
+    return '<details class="ac" data-id="'+esc(t.id)+'"'+(open.has(t.id)||!c.y&&!c.n?' open':'')+'><summary><b>'+esc(tName(t))+'</b> · верно '+c.y+' из '+QLAB.length+(c.left?' · не проверено '+c.left:' · проверено')+'</summary>'
+      +QLAB.map(q=>'<div class="qr"><div><div class="lbl">'+q[1]+'</div>'+esc(t.ans[q[0]]||'без ответа')+'</div><div class="gb">'
+      +'<button type="button" class="btn small alt'+(g[q[0]]===true?' on-y':'')+'" data-g="'+esc(t.id)+'|'+q[0]+'|1">Верно</button>'
+      +'<button type="button" class="btn small alt'+(g[q[0]]===false?' on-n':'')+'" data-g="'+esc(t.id)+'|'+q[0]+'|0">Неверно</button></div></div>').join('')+'</details>';
+  }).join('')||'<p class="hint">Пока никто не сдал ответы.</p>';
+  const rows=standings();
+  rb.innerHTML='<table class="res"><thead><tr><th class="n">Место</th><th>Команда</th><th class="n">Баллы</th><th class="n">Поездок</th><th class="n">Гонорар</th></tr></thead><tbody>'
+    +rows.map(r=>'<tr><td class="n">'+r.place+'</td><td>'+esc(r.name)+(r.started?'':' <span class="hint">(не входили)</span>')+'</td><td class="n">'+r.pts+'</td><td class="n">'+r.trips+'</td><td class="n">'+money(r.fee)+'</td></tr>').join('')
+    +'</tbody></table><p class="hint">Гонорар = баллы × '+money(ST.cfg.rateAns)+' − поездки × '+money(ST.cfg.rateTrip)+', не ниже нуля. При равных баллах выше команда с меньшим числом поездок.</p>';
+}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest&&e.target.closest('[data-g]');if(!b||!fbInit())return;
+  const [id,k,v]=b.dataset.g.split('|');const t=TEAMS.find(x=>x.id===id);if(!t)return;
+  const cur=(t.grades||{})[k],want=v==='1';
+  try{await fdb.collection('teams').doc(id).update({['grades.'+k]:cur===want?firebase.firestore.FieldValue.delete():want});}
+  catch(err){setNote('Не удалось сохранить отметку: '+(err&&err.message||err));}
+});
+/* экран зала: таблица результатов (снимок лежит в ST.results, чтобы окно экрана получило его без доступа к базе) */
+function syncResults(){
+  if(!(ST.show&&ST.show.type==='results'))return;
+  ST.results={rows:standings().map(r=>({place:r.place,name:r.name,pts:r.pts,trips:r.trips,fee:r.fee})),t:Date.now()};save();refresh();
+}
 /* ============ ИГРА ============ */
 const dur=k=>({p1:ST.cfg.p1,br:ST.cfg.br,p2:ST.cfg.p2}[k]||0)*60000;
 const totalMs=()=>(ST.cfg.p1+ST.cfg.p2)*60000;
@@ -434,10 +499,15 @@ function timerText(st){
 }
 function renderScreen(host,st){
   const sc=sceneOf(st);
-  const bg=sc?sc.bg:st.cfg.idleBg;
-  const img=sc?sc.img:st.cfg.idleImg;
+  const isRes=!!(st.show&&st.show.type==='results');
+  const bg=isRes?'night':sc?sc.bg:st.cfg.idleBg;
+  const img=isRes?'':sc?sc.img:st.cfg.idleImg;
   let inner='';
-  if(!sc){
+  if(isRes){
+    const rows=(st.results&&st.results.rows)||[];
+    inner='<div class="in"><div class="k">Полиция Фэрхейвена · Дело №1</div><h1 style="font-size:5cqw">Итоги дела</h1><table class="rt"><thead><tr><th class="n">Место</th><th>Команда</th><th class="n">Баллы</th><th class="n">Поездок</th><th class="n">Гонорар</th></tr></thead><tbody>'
+      +rows.map(r=>'<tr'+(r.place===1?' class="top"':'')+'><td class="n">'+r.place+'</td><td>'+esc(r.name)+'</td><td class="n">'+r.pts+'</td><td class="n">'+r.trips+'</td><td class="n">$'+Math.round(r.fee).toLocaleString('en-US')+'</td></tr>').join('')+'</tbody></table></div>';
+  }else if(!sc){
     inner='<div class="in"><div class="k">Полиция Фэрхейвена</div><h1>Тихая бухгалтерия</h1><div class="rule"></div><h3>Дело № 1956-11-06</h3></div>';
   }else if(sc.role==='join'){
     inner='<div class="in"><div class="k">'+esc(sc.kicker)+'</div><div class="qr" data-qr></div><div class="url">'+esc(joinUrlOf(st))+'</div><h3>Код команды выдаст ведущий</h3></div>';
@@ -622,6 +692,7 @@ $('bEnd').addEventListener('click',()=>{
   b.dataset.armed='';b.textContent='Закончить';endGame();
 });
 $('btnSnd').addEventListener('click',()=>{Sfx.set(!Sfx.on);syncSnd();Sfx.play('bell');});
+$('bResults').addEventListener('click',()=>{ST.show={type:'results'};ST.results={rows:standings().map(r=>({place:r.place,name:r.name,pts:r.pts,trips:r.trips,fee:r.fee})),t:Date.now()};Sfx.play('bell');save();refresh();});
 $('bHide').addEventListener('click',()=>{ST.show=null;save();refresh();});
 
 /* код игры */
@@ -649,9 +720,11 @@ $('bResend').addEventListener('click',publish);
 $('bResetAll').addEventListener('click',()=>{const b=$('bResetAll');if(b.dataset.armed!=='1'){b.dataset.armed='1';$('resetMsg').textContent='Заготовки вернутся, ваши тексты, картинки и таймер пропадут. Нажмите ещё раз.';return;}const keep=ST.code;ST=defaults();ST.code=keep;save();b.dataset.armed='';$('resetMsg').textContent='';bindCfg();renderLists();publish();});
 function bindCfg(){
   $('cP1').value=ST.cfg.p1;$('cBr').value=ST.cfg.br;$('cP2').value=ST.cfg.p2;
-  $('cTimer').checked=ST.cfg.showTimer;$('cClear').checked=ST.cfg.clearOnStart;$('cIdleBg').value=ST.cfg.idleBg;$('cUrl').value=ST.cfg.playerUrl||PLAYER_URL;
+  $('cRA').value=ST.cfg.rateAns;$('cRT').value=ST.cfg.rateTrip;$('cTimer').checked=ST.cfg.showTimer;$('cClear').checked=ST.cfg.clearOnStart;$('cIdleBg').value=ST.cfg.idleBg;$('cUrl').value=ST.cfg.playerUrl||PLAYER_URL;
 }
 [['cP1','p1'],['cBr','br'],['cP2','p2']].forEach(([id,k])=>$(id).addEventListener('input',e=>{const v=Number(e.target.value);if(v>=0){ST.cfg[k]=v;save();refresh();}}));
+$('cRA').addEventListener('input',e=>{ST.cfg.rateAns=Math.max(0,+e.target.value||0);save();renderTeams();});
+$('cRT').addEventListener('input',e=>{ST.cfg.rateTrip=Math.max(0,+e.target.value||0);save();renderTeams();});
 $('cTimer').addEventListener('change',e=>{ST.cfg.showTimer=e.target.checked;save();refresh();});
 $('cClear').addEventListener('change',e=>{ST.cfg.clearOnStart=e.target.checked;save();});
 $('cIdleBg').addEventListener('change',e=>{ST.cfg.idleBg=e.target.value;save();refresh();});

@@ -15,11 +15,11 @@ service cloud.firestore {
     match /teams/{c} {
       allow get: if true;
       allow list: if request.query.limit <= 100;
-      allow create: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd'])
+      allow create: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd', 'grades'])
         && request.resource.data.game is string
         && request.resource.data.game.size() <= 12
         && request.resource.data.n is number;
-      allow update: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd'])
+      allow update: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd', 'grades'])
         && request.resource.data.game == resource.data.game
         && request.resource.data.n == resource.data.n
         && (resource.data.name == '' || request.resource.data.name == resource.data.name)

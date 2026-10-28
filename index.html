@@ -899,7 +899,6 @@ function fillAnswers(){
   const f=$('ansForm');f.textContent='';
   if(S.ans){
     f.appendChild(el('div','label','Команда «'+S.team+'»'));
-    f.appendChild(el('div','res','Верных ответов: '+S.score+' из '+QUESTIONS.length));
     f.appendChild(el('p','hint','Дело сдано. Покажите экран ведущему. Он проверит ответы.'));
     QUESTIONS.forEach(q=>{const r=el('div','ans');r.appendChild(el('div','label',q.label));r.appendChild(el('div','given',(S.ans[q.id]||'').toString()||'без ответа'));f.appendChild(r);});
     return;
@@ -988,7 +987,7 @@ $('gHostForm').addEventListener('submit',e=>{
   if($('gHostCode').value.trim()!==HOSTCODE){$('gHostCode').value='';$('gHostCode').placeholder='Неверный код';return;}
   const r=$('gResult');r.textContent='';r.hidden=false;
   if(S.ans){
-    r.className='gres';r.appendChild(el('div','res','Верных ответов: '+S.score+' из '+QUESTIONS.length));
+    r.className='gres';
     QUESTIONS.forEach(q=>{const d=el('div','ans');d.appendChild(el('div','label',q.label));d.appendChild(el('div','given',S.ans[q.id]||'без ответа'));r.appendChild(d);});
   }else{r.className='gres';r.appendChild(el('p',null,'Команда не сдала ответы.'));}
   $('gHostForm').hidden=true;
