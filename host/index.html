@@ -101,6 +101,10 @@ body.screenmode{padding:0;background:#000;overflow:hidden}
 body.screenmode .wrap{display:none}
 body.screenmode .fs{display:block}
 @media (prefers-reduced-motion: reduce){.btn,.fs .ctrl{transition:none}}
+.give{margin:0 0 14px;padding:10px 12px;border:2px solid var(--steel);border-radius:6px}
+.give h3{margin:0 0 8px;font-size:15px}
+.give .gi{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)}
+.give .gi:first-of-type{border-top:0}
 .tt{width:100%;border-collapse:collapse;font-size:14px}
 .tt th,.tt td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 .tt th{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
@@ -167,6 +171,7 @@ body.screenmode .fs{display:block}
       <button class="btn alt small" id="bAddTeam" type="button" hidden>Добавить команду</button>
       <button class="btn alt small" id="bCopyCodes" type="button" hidden>Скопировать коды</button>
     </div>
+    <div id="giveBox"></div>
     <div id="teamsList"></div>
   </section>
 
@@ -337,7 +342,17 @@ async function makeTeams(k){
   }catch(e){teamsErr=String((e&&e.message)||e);renderTeams();}
   bs.forEach(b=>b.disabled=false);
 }
+const APPN={1:'Фото места происшествия',2:'Заключение коронера',3:'Тетрадь Э. Рэйн',4:'Журнал смен склада',5:'Протокол о драке',6:'Журнал ломбарда «Золотой Якорь»',7:'Книга заказов химчистки',8:'Медкарта Д. Рэйна',9:'Рапорт и баллистика',10:'Фото револьвера',11:'Накладные из З-17'};
+function renderGive(){
+  const gb=$('giveBox');if(!gb)return;
+  ST.given=ST.given||{};
+  const q=[];TEAMS.forEach(t=>(t.apps||[]).forEach(n=>{if(!(ST.given[t.id]||[]).includes(n))q.push([t,n]);}));
+  if(!q.length){gb.innerHTML='<div class="give"><h3>Выдать бумагу</h3><p class="hint" style="margin:0">Очередь пуста: всё найденное уже выдано.</p></div>';return;}
+  gb.innerHTML='<div class="give"><h3>Выдать бумагу: '+q.length+'</h3>'+q.map(x=>'<div class="gi"><span>Команда <b>'+x[0].n+'</b> '+(x[0].name?'«'+esc(x[0].name)+'»':'')+' — приложение <b>'+x[1]+'</b>. '+esc(APPN[x[1]]||'')+'</span><button class="btn small" type="button" data-t="'+esc(x[0].id)+'" data-a="'+x[1]+'">Выдано</button></div>').join('')+'</div>';
+}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.give button[data-t]');if(!b)return;ST.given=ST.given||{};const t=b.dataset.t,a=+b.dataset.a;(ST.given[t]=ST.given[t]||[]).push(a);save();renderGive();});
 function renderTeams(){
+  renderGive();
   const box=$('teamsList');if(!box)return;
   $('bMake').hidden=TEAMS.length>0;$('tCount').hidden=TEAMS.length>0;document.querySelector('label[for=tCount]').hidden=TEAMS.length>0;
   $('bAddTeam').hidden=!TEAMS.length;$('bCopyCodes').hidden=!TEAMS.length;
@@ -620,7 +635,7 @@ $('bNewCode').addEventListener('click',()=>{
   const b=$('bNewCode');
   if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Новая игра: команды и коды обнулятся. Ещё раз?';setTimeout(()=>{b.dataset.armed='';b.textContent='Новая игра';},4000);return;}
   b.dataset.armed='';b.textContent='Новая игра';
-  ST.code=newCode();ST.created=Date.now();resetRun();watchTeams();
+  ST.code=newCode();ST.created=Date.now();ST.given={};resetRun();watchTeams();
 });
 $('bMake').addEventListener('click',()=>{const k=Math.max(1,Math.min(30,parseInt($('tCount').value,10)||1));makeTeams(k);});
 $('bAddTeam').addEventListener('click',()=>makeTeams(1));
