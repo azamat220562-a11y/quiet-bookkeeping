@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Состояние игры: пульт пишет, игроки читают.
+    match /games/{g} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['state', 't', 'created'])
+        && request.resource.data.state in ['waiting', 'running', 'paused', 'ended']
+        && request.resource.data.t is number;
+      allow delete: if false;
+    }
+
+    // Команда: код документа = код доступа команды.
+    match /teams/{c} {
+      allow get: if true;
+      allow list: if request.query.limit <= 100;
+      allow create: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd'])
+        && request.resource.data.game is string
+        && request.resource.data.game.size() <= 12
+        && request.resource.data.n is number;
+      allow update: if request.resource.data.keys().hasOnly(['game', 'n', 'created', 'name', 'start', 'log', 'apps', 'people', 'ans', 'ansTs', 'score', 'draft', 'draftTs', 'upd'])
+        && request.resource.data.game == resource.data.game
+        && request.resource.data.n == resource.data.n
+        && (resource.data.name == '' || request.resource.data.name == resource.data.name)
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.log.size() <= 600
+        && request.resource.data.apps.size() <= 30
+        && request.resource.data.people.size() <= 80;
+      allow delete: if false;
+    }
+  }
+}

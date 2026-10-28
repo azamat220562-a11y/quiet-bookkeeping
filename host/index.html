@@ -101,6 +101,12 @@ body.screenmode{padding:0;background:#000;overflow:hidden}
 body.screenmode .wrap{display:none}
 body.screenmode .fs{display:block}
 @media (prefers-reduced-motion: reduce){.btn,.fs .ctrl{transition:none}}
+.tt{width:100%;border-collapse:collapse;font-size:14px}
+.tt th,.tt td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tt th{font-family:var(--f-label);letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--ink2)}
+.tcode{font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:.14em;white-space:nowrap}
+.tt details summary{cursor:pointer;color:var(--steel)}
+.tt .qa{margin:6px 0 0;font-size:13px}.tt .qa b{font-family:var(--f-label);letter-spacing:.06em;text-transform:uppercase;font-size:11px;color:var(--ink2)}
 </style>
 </head><body>
 
@@ -138,21 +144,30 @@ body.screenmode .fs{display:block}
     <div class="hint" id="stateHint">До начала игры у игроков экран «Дело ещё не поступило».</div>
   </section>
 
-  <section class="sheet" aria-label="Код игры">
-    <div class="codebox">
-      <div class="code" id="codeText">-----</div>
-      <div class="f">
-        <span class="label">Код игры и ссылка для игроков</span>
-        <input type="text" id="joinUrl" readonly aria-label="Ссылка для игроков">
-      </div>
+  <section class="sheet" aria-label="Вход игроков">
+    <div class="f">
+      <span class="label">Ссылка для игроков (одна на всех команд)</span>
+      <input type="text" id="joinUrl" readonly aria-label="Ссылка для игроков">
     </div>
     <div class="row">
       <button class="btn alt small" id="bCopy" type="button">Скопировать ссылку</button>
-      <button class="btn alt small" id="bShowCode" type="button">Показать код и QR на экране зала</button>
-      <button class="btn alt small" id="bNewCode" type="button">Новый код</button>
+      <button class="btn alt small" id="bShowCode" type="button">Показать QR на экране зала</button>
+      <button class="btn alt small" id="bNewCode" type="button">Новая игра</button>
       <button class="btn alt small" id="bResend" type="button">Отправить состояние ещё раз</button>
     </div>
     <div class="net" id="netStat">Связь с игроками: ещё не отправляли.</div>
+  </section>
+
+  <section class="sheet" aria-label="Команды">
+    <h2>Команды</h2>
+    <div class="row">
+      <label class="label" for="tCount">Сколько команд</label>
+      <input type="number" id="tCount" min="1" max="30" value="6" inputmode="numeric" style="max-width:90px">
+      <button class="btn small" id="bMake" type="button">Создать команды</button>
+      <button class="btn alt small" id="bAddTeam" type="button" hidden>Добавить команду</button>
+      <button class="btn alt small" id="bCopyCodes" type="button" hidden>Скопировать коды</button>
+    </div>
+    <div id="teamsList"></div>
   </section>
 
   <section class="live">
@@ -206,6 +221,8 @@ body.screenmode .fs{display:block}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ============ ЗАГОТОВКИ ============ */
 const KEY='case1-host-v2';
@@ -214,7 +231,7 @@ const defaults=()=>({
   cfg:{p1:60,br:15,p2:60,showTimer:true,clearOnStart:true,idleBg:'wall',idleImg:'',playerUrl:PLAYER_URL},
   code:'',
   scenes:[
-    {id:'join',kind:'scene',role:'join',name:'Код игры и QR',kicker:'Заходите на сайт',title:'Код игры',sub:'',text:'',bg:'night',img:''},
+    {id:'join',kind:'scene',role:'join',name:'Код игры и QR',kicker:'Откройте ссылку и введите код своей команды',title:'Вход в дело',sub:'',text:'',bg:'night',img:''},
     {id:'intro',kind:'scene',role:'intro',name:'Начальная заставка',kicker:'Полиция Фэрхейвена · Дело № 1956-11-06',title:'Тихая бухгалтерия',sub:'Вторник, 6 ноября 1956',text:'В 06:10 ночной сторож нашёл в конторе склада №4 тело главного бухгалтера Эвелин Рэйн. Один выстрел. Оружия на месте нет.\nВ городе выборы, и мэр хочет закрыть дело сегодня.',bg:'wall',img:''},
     {id:'brk',kind:'scene',role:'break',name:'Перерыв',kicker:'Перерыв',title:'Вернёмся через',sub:'',text:'Не обсуждайте дело с другими командами. Бумаги остаются на столах.',bg:'night',img:''},
     {id:'fin',kind:'scene',role:'finale',name:'Финал',kicker:'Время вышло',title:'Спасибо за игру',sub:'',text:'Итоги объявит ведущий.',bg:'red',img:''}
@@ -266,26 +283,76 @@ const Sfx=(function(){
 })();
 function syncSnd(){const b=$('btnSnd');b.textContent='Звук: '+(Sfx.on?'вкл':'выкл');b.setAttribute('aria-pressed',Sfx.on?'true':'false');}
 
-/* ============ СВЯЗЬ С ИГРОКАМИ (ntfy.sh) ============ */
-const NT='https://ntfy.sh/';
+/* ============ СВЯЗЬ С ИГРОКАМИ И КОМАНДЫ (Firebase Firestore) ============ */
+const FBCFG={apiKey:'AIzaSyBLwU2nY_wW3ERLUZn7pAbQFwIGv_rcUlA',authDomain:'detective-fh1956-az.firebaseapp.com',projectId:'detective-fh1956-az',appId:'1:275771828711:web:fe6c4eb5fd40b922997542'};
 const CODE_CHARS='abcdefghjkmnpqrstuvwxyz23456789';
-function newCode(){let c='';for(let i=0;i<5;i++)c+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];return c;}
+function newCode(len){let c='';for(let i=0;i<(len||5);i++)c+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];return c;}
 function netState(){const r=ST.run.state;return r==='running'?'running':r==='paused'?'paused':r==='ended'?'ended':'waiting';}
+let fdb=null;
+function fbInit(){
+  if(fdb)return true;
+  try{
+    if(!window.firebase)return false;
+    if(!firebase.apps.length)firebase.initializeApp(FBCFG);
+    fdb=firebase.firestore();fdb.settings({experimentalAutoDetectLongPolling:true,merge:true});
+    return true;
+  }catch(e){return false;}
+}
 let lastPub=0;
 async function publish(){
   if(!ST.code)return;
-  const msg=JSON.stringify({v:1,s:netState(),t:Date.now()});
   const el=$('netStat');
   try{
-    const r=await fetch(NT+'fh1956-'+ST.code,{method:'POST',body:msg});
-    if(!r.ok)throw new Error('HTTP '+r.status);
+    if(!fbInit())throw new Error('SDK');
+    await fdb.collection('games').doc(ST.code).set({state:netState(),t:Date.now(),created:ST.created||Date.now()});
     lastPub=Date.now();
     el.className='net ok';el.textContent='Связь с игроками: статус «'+({waiting:'ждём',running:'идёт игра',paused:'перерыв',ended:'игра окончена'}[netState()])+'» отправлен в '+new Date(lastPub).toLocaleTimeString('ru-RU');
   }catch(e){
-    el.className='net bad';el.textContent='Нет связи с сервером ntfy.sh. Статус не отправлен. Проверьте интернет и нажмите «Отправить состояние ещё раз».';
+    el.className='net bad';el.textContent='Нет связи с сервером игры. Статус не отправлен. Проверьте интернет и нажмите «Отправить состояние ещё раз».';
   }
 }
-function joinUrl(){const u=(ST.cfg.playerUrl||PLAYER_URL);return u+(u.includes('?')?'&':'?')+'g='+ST.code;}
+function joinUrl(){return ST.cfg.playerUrl||PLAYER_URL;}
+/* команды: у каждой свой код доступа (документ teams/КОД), общая история хранится в нём */
+let TEAMS=[],unsubT=null,teamsErr='';
+const QLAB=[['killer','Убийца'],['weapon','Орудие'],['motive','Мотив'],['place','Место'],['alibi','Алиби'],['link','Связь с орудием']];
+function watchTeams(){
+  if(unsubT){unsubT();unsubT=null;}
+  TEAMS=[];teamsErr='';
+  if(!ST.code||!fbInit()){renderTeams();return;}
+  unsubT=fdb.collection('teams').where('game','==',ST.code).limit(100).onSnapshot(snap=>{
+    TEAMS=snap.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>(a.n||0)-(b.n||0));teamsErr='';renderTeams();
+  },e=>{teamsErr=String((e&&e.message)||e);renderTeams();});
+}
+async function makeTeams(k){
+  if(!fbInit()){teamsErr='Не загрузилась связь с сервером. Обновите страницу.';renderTeams();return;}
+  const bs=['bMake','bAddTeam'].map($);bs.forEach(b=>b.disabled=true);
+  try{
+    const base=TEAMS.reduce((m,t)=>Math.max(m,t.n||0),0);
+    for(let i=1;i<=k;i++){
+      let code='',tries=0;
+      do{code=newCode(6);tries++;}while(tries<10&&(await fdb.collection('teams').doc(code).get()).exists);
+      await fdb.collection('teams').doc(code).set({game:ST.code,n:base+i,created:Date.now(),name:'',start:0,log:[],apps:[],people:[],ans:null,ansTs:0,score:null,draft:{},draftTs:{},upd:0});
+    }
+    teamsErr='';
+  }catch(e){teamsErr=String((e&&e.message)||e);renderTeams();}
+  bs.forEach(b=>b.disabled=false);
+}
+function renderTeams(){
+  const box=$('teamsList');if(!box)return;
+  $('bMake').hidden=TEAMS.length>0;$('tCount').hidden=TEAMS.length>0;document.querySelector('label[for=tCount]').hidden=TEAMS.length>0;
+  $('bAddTeam').hidden=!TEAMS.length;$('bCopyCodes').hidden=!TEAMS.length;
+  if(teamsErr){box.innerHTML='<p class="hint">Не удалось получить список команд: '+esc(teamsErr)+'</p>';return;}
+  if(!TEAMS.length){box.innerHTML='<p class="hint">Команд пока нет. Укажите число и нажмите «Создать команды». У каждой будет свой код доступа: напишите его на бумажке и отдайте команде. Игроки открывают общую ссылку и вводят этот код.</p>';return;}
+  const open=new Set([...box.querySelectorAll('details[open]')].map(d=>d.dataset.id));
+  let h='<table class="tt"><thead><tr><th>№</th><th>Код</th><th>Название</th><th>Приложений</th><th>Запросов</th><th>Ответы</th></tr></thead><tbody>';
+  TEAMS.forEach(t=>{
+    const name=t.name?esc(t.name):'<span class="hint">ещё не вошли</span>';
+    const ans=t.ans?('<b>'+esc(t.score)+' из '+QLAB.length+'</b>'):'<span class="hint">не сданы</span>';
+    h+='<tr><td>'+t.n+'</td><td class="tcode">'+esc(t.id.toUpperCase())+'</td><td>'+name+'</td><td>'+(t.apps||[]).length+'</td><td>'+(t.log||[]).length+'</td><td>'+ans+'</td></tr>';
+    if(t.ans)h+='<tr><td colspan="6"><details data-id="'+esc(t.id)+'"'+(open.has(t.id)?' open':'')+'><summary>Ответы команды</summary>'+QLAB.map(q=>'<p class="qa"><b>'+q[1]+'</b><br>'+esc(t.ans[q[0]]||'без ответа')+'</p>').join('')+'</details></td></tr>';
+  });
+  box.innerHTML=h+'</tbody></table>';
+}
 
 /* ============ ИГРА ============ */
 const dur=k=>({p1:ST.cfg.p1,br:ST.cfg.br,p2:ST.cfg.p2}[k]||0)*60000;
@@ -358,7 +425,7 @@ function renderScreen(host,st){
   if(!sc){
     inner='<div class="in"><div class="k">Полиция Фэрхейвена</div><h1>Тихая бухгалтерия</h1><div class="rule"></div><h3>Дело № 1956-11-06</h3></div>';
   }else if(sc.role==='join'){
-    inner='<div class="in"><div class="k">'+esc(sc.kicker)+'</div><div class="codebig">'+esc(st.code)+'</div><div class="qr" data-qr></div><div class="url">'+esc(joinUrlOf(st))+'</div></div>';
+    inner='<div class="in"><div class="k">'+esc(sc.kicker)+'</div><div class="qr" data-qr></div><div class="url">'+esc(joinUrlOf(st))+'</div><h3>Код команды выдаст ведущий</h3></div>';
   }else if(sc.kind==='scene'||sc.role){
     const isBreak=sc.role==='break';
     inner='<div class="in">'+(sc.kicker?'<div class="k">'+esc(sc.kicker)+'</div>':'')
@@ -383,7 +450,7 @@ function renderScreen(host,st){
     const b=host.querySelector('[data-brk]');if(b)b.textContent=timerText(st).replace('Перерыв ','');
   }
 }
-function joinUrlOf(st){const u=(st.cfg.playerUrl||PLAYER_URL);return u+(u.includes('?')?'&':'?')+'g='+st.code;}
+function joinUrlOf(st){return st.cfg.playerUrl||PLAYER_URL;}
 
 /* ============ ПАНЕЛЬ ============ */
 function refresh(){
@@ -429,7 +496,7 @@ function refresh(){
   });
   const sc=sceneOf(ST);
   $('nowName').textContent=sc?('Сейчас: '+(sc.name||sc.title||'')):'Сейчас: общий фон';
-  $('codeText').textContent=ST.code||'-----';$('joinUrl').value=ST.code?joinUrl():'';
+  $('joinUrl').value=joinUrl();
   renderScreen($('prevHost'),ST);
   if(!$('fs').hidden)renderScreen($('stage'),ST);
 }
@@ -551,9 +618,16 @@ $('bCopy').addEventListener('click',async()=>{
 $('bShowCode').addEventListener('click',()=>{const s=sceneByRole('join');if(s)showItem('scene',s.id);});
 $('bNewCode').addEventListener('click',()=>{
   const b=$('bNewCode');
-  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Старые ссылки перестанут работать. Ещё раз?';setTimeout(()=>{b.dataset.armed='';b.textContent='Новый код';},4000);return;}
-  b.dataset.armed='';b.textContent='Новый код';
-  ST.code=newCode();resetRun();
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='Новая игра: команды и коды обнулятся. Ещё раз?';setTimeout(()=>{b.dataset.armed='';b.textContent='Новая игра';},4000);return;}
+  b.dataset.armed='';b.textContent='Новая игра';
+  ST.code=newCode();ST.created=Date.now();resetRun();watchTeams();
+});
+$('bMake').addEventListener('click',()=>{const k=Math.max(1,Math.min(30,parseInt($('tCount').value,10)||1));makeTeams(k);});
+$('bAddTeam').addEventListener('click',()=>makeTeams(1));
+$('bCopyCodes').addEventListener('click',async()=>{
+  const t=TEAMS.map(x=>x.n+'. '+x.id.toUpperCase()+(x.name?' ('+x.name+')':'')).join('\n');const b=$('bCopyCodes');
+  try{await navigator.clipboard.writeText(t);b.textContent='Скопировано';}catch(e){b.textContent='Не удалось скопировать';}
+  setTimeout(()=>{b.textContent='Скопировать коды';},2000);
 });
 $('bResend').addEventListener('click',publish);
 
@@ -612,11 +686,13 @@ if(SCREEN){
   setInterval(rerender,500);rerender();
   document.addEventListener('click',()=>{try{document.documentElement.requestFullscreen();}catch(e){}});
 }else{
-  if(!ST.code){ST.code=newCode();save();}
+  if(!ST.code)ST.code=newCode();
+  if(!ST.created)ST.created=Date.now();
+  save();
   syncSnd();bindCfg();renderLists();
   setInterval(refresh,250);
-  setInterval(publish,90000);
   setTimeout(publish,600);
+  watchTeams();
   window.addEventListener('storage',e=>{if(e.key===KEY){ST=load();refresh();}});
 }
 </script>

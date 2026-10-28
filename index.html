@@ -179,7 +179,10 @@ nav.tabs button:hover{background:var(--paper)}
 .ehead{touch-action:manipulation}
 .et,.entry .t{overflow-wrap:anywhere}
 </style>
-<style>body{margin:0}</style></head><body>
+<style>body{margin:0}</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head><body>
 
 
 <div class="gate" id="gate" role="alertdialog" aria-modal="true" aria-labelledby="gTitle" hidden>
@@ -188,7 +191,7 @@ nav.tabs button:hover{background:var(--paper)}
     <h2 id="gTitle">Дело ещё не поступило</h2>
     <p id="gText"></p>
     <form id="gCodeForm" class="row" hidden>
-      <input type="text" id="gCode" name="game-code" aria-label="Код игры" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="Код игры">
+      <input type="text" id="gCode" name="team-code" aria-label="Код команды" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="Код команды">
       <button class="btn" type="submit">Войти</button>
     </form>
     <div id="gResult" hidden></div>
@@ -216,6 +219,7 @@ nav.tabs button:hover{background:var(--paper)}
     <h2>Новое дело</h2>
     <p>В 06:10 ночной сторож Ной Бэрроу нашёл в конторе склада №4 компании «Харлоу Фрейт» (порт, адрес П-12) тело главного бухгалтера Эвелин Рэйн, 32 года. Один выстрел. Оружия на месте нет.</p>
     <p>Весь город сегодня голосует, и мэр хочет закрыть дело до закрытия участков. Вы получаете справочник, газету и доступ к городским картотекам.</p>
+    <p class="hint">Название вводит один человек из команды. Остальные, кто зайдёт по тому же коду, сразу окажутся в этом деле, со своей общей историей.</p>
     <label class="label" for="teamName">Название команды</label>
     <div class="row"><input type="text" id="teamName" name="team" maxlength="40" autocomplete="off" placeholder="Например, «Серые шляпы»"><button class="btn" id="startBtn">Открыть дело</button></div>
   </section>
@@ -516,11 +520,15 @@ function score(ans){
 if(typeof document==='undefined'){ module.exports={isRight,resolve,resolveWarrant,resolveShow,score,QUESTIONS,ENTRIES,APPS,WARRANTS,SHOWS,normAddr}; }
 else (function(){
 /* ============ СОСТОЯНИЕ ============ */
-const KEY='sttwins-case1-v1';
+const KEY0='sttwins-case1-v1';
+let KEY=KEY0;
 let mem=null;
-function load(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s);}catch(e){}return mem||{team:'',start:0,log:[],apps:[],people:[],ans:null,score:null};}
+function blank(){return {team:'',start:0,log:[],apps:[],people:[],ans:null,score:null};}
+function load(){let o=null;try{const s=localStorage.getItem(KEY);if(s)o=JSON.parse(s);}catch(e){}o=o||mem||blank();['log','apps','people'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[];});return o;}
 let S=load();
-function save(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let dirty=false,ver=0;
+function saveLocal(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){saveLocal();dirty=true;ver++;if(Sync.on)Sync.schedule();}
 const $=id=>document.getElementById(id);
 function el(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n;}
 
@@ -554,64 +562,106 @@ const Sfx=(function(){
 })();
 function syncSndBtn(){['sndBtn','gSnd'].forEach(id=>{const b=$(id);b.textContent='Звук: '+(Sfx.on?'вкл':'выкл');b.setAttribute('aria-pressed',Sfx.on?'true':'false');});}
 
-/* ============ СВЯЗЬ С ПУЛЬТОМ (ntfy.sh) ============ */
+/* ============ ОБЩАЯ ИСТОРИЯ КОМАНДЫ И СВЯЗЬ С ПУЛЬТОМ (Firebase Firestore) ============ */
 const HOSTCODE='1956';
+const FBCFG={apiKey:'AIzaSyBLwU2nY_wW3ERLUZn7pAbQFwIGv_rcUlA',authDomain:'detective-fh1956-az.firebaseapp.com',projectId:'detective-fh1956-az',appId:'1:275771828711:web:fe6c4eb5fd40b922997542'};
+const TCMAP={'а':'a','в':'b','с':'c','е':'e','н':'h','к':'k','м':'m','о':'o','р':'p','т':'t','х':'x','у':'y'};
+function normCode(c){return String(c||'').toLowerCase().replace(/[а-яё]/g,ch=>TCMAP[ch]||ch).replace(/[^a-z0-9]/g,'');}
+const isTest=v=>/^(test|тест)$/i.test(String(v||'').trim());
+function setNet(ok){const chip=$('netChip');chip.hidden=Net.test||!Team.code;chip.className='netchip'+(ok?'':' bad');chip.textContent=ok?'● на связи':'● нет связи';renderGateNet(ok);}
+
+const Sync=(function(){
+  let db=null,ref=null,unsub=null,on=false,timer=null,busy=false,again=false,onChg=function(){};
+  function init(){
+    if(db)return true;
+    try{
+      if(!window.firebase)return false;
+      if(!firebase.apps.length)firebase.initializeApp(FBCFG);
+      db=firebase.firestore();db.settings({experimentalAutoDetectLongPolling:true,merge:true});
+      return true;
+    }catch(e){return false;}
+  }
+  const lid=x=>(x.ts||0)+'|'+(x.key||x.q||'');
+  function union(a,b){const out=a.slice();(b||[]).forEach(v=>{if(!out.includes(v))out.push(v);});return out;}
+  function mergeInto(st,r){
+    let ch=false;
+    if(r.name&&r.name!==st.team){st.team=r.name;ch=true;}
+    if(r.start&&(!st.start||r.start<st.start)){st.start=r.start;ch=true;}
+    const have=new Set(st.log.map(lid));let added=false;
+    (r.log||[]).forEach(x=>{if(!have.has(lid(x))){st.log.push(x);have.add(lid(x));added=true;}});
+    if(added){st.log.sort((a,b)=>(b.ts||0)-(a.ts||0));ch=true;}
+    const apps=union(st.apps,r.apps);if(apps.length!==st.apps.length){st.apps=apps;ch=true;}
+    const ppl=union(st.people,r.people);if(ppl.length!==st.people.length){st.people=ppl;ch=true;}
+    if(r.ans&&(r.ansTs||0)>(st.ansTs||0)){st.ans=r.ans;st.ansTs=r.ansTs;st.score=r.score;ch=true;}
+    const dt=r.draftTs||{};st.draft=st.draft||{};st.draftTs=st.draftTs||{};
+    Object.keys(dt).forEach(id=>{if((dt[id]||0)>(st.draftTs[id]||0)){st.draft[id]=(r.draft||{})[id]||'';st.draftTs[id]=dt[id];ch=true;}});
+    return ch;
+  }
+  function toDoc(st){return {name:st.team||'',start:st.start||0,log:st.log.slice(0,500),apps:st.apps,people:st.people,ans:st.ans||null,ansTs:st.ansTs||0,score:st.score==null?null:st.score,draft:st.draft||{},draftTs:st.draftTs||{}};}
+  async function lookup(c){
+    if(!init())return {err:'sdk'};
+    try{const s=await db.collection('teams').doc(c).get();return s.exists?{data:s.data()}:{nf:true};}
+    catch(e){return {err:String((e&&e.code)||e)};}
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(pushNow,600);}
+  async function pushNow(){
+    if(!on||!dirty)return;
+    if(busy){again=true;return;}
+    busy=true;const v0=ver;
+    try{
+      await db.runTransaction(async tx=>{
+        const snap=await tx.get(ref);if(!snap.exists)throw new Error('нет документа команды');
+        const r=snap.data();mergeInto(S,r);
+        tx.update(ref,Object.assign({},r,toDoc(S),{upd:Date.now()}));
+      });
+      if(ver===v0)dirty=false;
+      saveLocal();setNet(true);onChg();
+    }catch(e){setNet(false);clearTimeout(timer);timer=setTimeout(pushNow,5000);}
+    busy=false;
+    if(again||(dirty&&ver!==v0)){again=false;schedule();}
+  }
+  async function claimName(n){
+    await db.runTransaction(async tx=>{
+      const snap=await tx.get(ref);if(!snap.exists)throw new Error('нет документа команды');
+      const r=snap.data();
+      if(r.name){mergeInto(S,r);return;}
+      S.team=n;S.start=r.start||Date.now();
+      mergeInto(S,r);
+      tx.update(ref,Object.assign({},r,toDoc(S),{upd:Date.now()}));
+    });
+    saveLocal();
+  }
+  function start(c,cb){
+    if(unsub)unsub();
+    ref=db.collection('teams').doc(c);on=true;onChg=cb||onChg;
+    unsub=ref.onSnapshot({includeMetadataChanges:true},snap=>{
+      setNet(!snap.metadata.fromCache);
+      if(!snap.exists)return;
+      if(mergeInto(S,snap.data())){saveLocal();onChg();}
+      if(dirty)schedule();
+    },e=>setNet(false));
+  }
+  window.addEventListener('pagehide',()=>{if(on&&dirty)pushNow();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&on&&dirty)pushNow();});
+  return {init,lookup,start,schedule,claimName,mergeInto,database(){return db;},get on(){return on;}};
+})();
+
+const Team={code:'',game:''};
 const Net=(function(){
-  const NT='https://ntfy.sh/';
-  let code='',test=false,state=null,es=null,open=false,pollTimer=null,lastMsgAt=0,started=0;
-  const q=new URLSearchParams(location.search);
-  function norm(c){return String(c||'').toLowerCase().replace(/[^a-z0-9а-яё]/g,'');}
-  try{
-    if(q.get('nogate'))test=true;
-    code=norm(q.get('g'))||norm(localStorage.getItem('fh-code'));
-  }catch(e){}
-  if(code==='test'||code==='тест'){test=true;code='';}
-  function topic(){return 'fh1956-'+code;}
-  function apply(m){
-    if(!m||typeof m.s!=='string'||typeof m.t!=='number')return;
-    if(state&&m.t<state.t)return;
-    const prev=state?state.s:null;
-    state=m;lastMsgAt=Date.now();
-    onState(prev,m.s);
+  let test=false,state=null,unsub=null;
+  try{if(new URLSearchParams(location.search).get('nogate'))test=true;}catch(e){}
+  function apply(s,t){const prev=state?state.s:null;state={s,t};onState(prev,s);}
+  function listen(game){
+    if(unsub){unsub();unsub=null;}state=null;
+    unsub=Sync.database().collection('games').doc(game).onSnapshot({includeMetadataChanges:true},snap=>{
+      setNet(!snap.metadata.fromCache);
+      if(!snap.exists){if(snap.metadata.fromCache){gateFromState();return;}apply('waiting',0);return;}
+      const d=snap.data();
+      if(state&&state.s===d.state){gateFromState();return;}
+      apply(d.state,d.t||0);
+    },e=>setNet(false));
   }
-  function handleLine(raw){
-    try{const ev=JSON.parse(raw);if(ev.event==='message'&&ev.message)apply(JSON.parse(ev.message));}catch(e){}
-  }
-  async function poll(){
-    if(!code)return;
-    try{
-      const r=await fetch(NT+topic()+'/json?poll=1&since=all',{cache:'no-store'});
-      const txt=await r.text();
-      txt.split('\n').filter(Boolean).forEach(handleLine);
-      setNet(true);
-    }catch(e){setNet(false);}
-  }
-  function connect(){
-    if(test||!code)return;
-    started=Date.now();
-    try{
-      es=new EventSource(NT+topic()+'/sse?since=all');
-      es.addEventListener('open',()=>{open=true;setNet(true);});
-      es.onmessage=ev=>{open=true;handleLine(ev.data);};
-      es.onerror=()=>{open=false;setNet(false);};
-    }catch(e){}
-    poll();
-    clearInterval(pollTimer);
-    pollTimer=setInterval(()=>{if(!open||Date.now()-lastMsgAt>120000)poll();},open?60000:12000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll();});
-  }
-  function setNet(ok){
-    const chip=$('netChip');
-    chip.hidden=test||!code;
-    chip.className='netchip'+(ok?'':' bad');
-    chip.textContent=ok?'● на связи':'● нет связи';
-    renderGateNet(ok);
-  }
-  return {
-    get code(){return code;},get test(){return test;},get state(){return state;},
-    setCode(c){code=norm(c);if(code==='test'||code==='тест'){test=true;code='';}try{localStorage.setItem('fh-code',code);}catch(e){}state=null;if(es)es.close();connect();},
-    connect,poll,get connected(){return open;}
-  };
+  return {get test(){return test;},set test(v){test=!!v;},get state(){return state;},listen};
 })();
 
 /* ============ ЭКРАН БЛОКИРОВКИ ============ */
@@ -627,7 +677,7 @@ function updateGateNet(){
 function showGate(kind){
   const g=$('gate'),T=$('gTitle'),X=$('gText');
   const cfg={
-    code:['Полиция Фэрхейвена','Введите код игры','Код показывает ведущий на экране. Он состоит из букв и цифр.'],
+    code:['Полиция Фэрхейвена','Введите код команды','Код написан на карточке вашей команды. По нему все ваши участники попадают в одно общее дело.'],
     wait:['Дело №1956-11-06','Дело ещё не поступило','Дежурный пока не передал материалы. Оставайтесь на местах и ждите звонка.'],
     link:['Дело №1956-11-06','Соединяем с управлением…','Ждём ответа от ведущего.'],
     pause:['Перерыв','Дело приостановлено','Отдохните и сверьте записи. Когда ведущий объявит продолжение, доступ откроется сам.'],
@@ -647,7 +697,7 @@ function hideGate(){
 }
 function gateFromState(){
   if(Net.test){hideGate();return;}
-  if(!Net.code){showGate('code');return;}
+  if(!Team.code){showGate('code');return;}
   const st=Net.state;
   if(!st){showGate('link');return;}
   if(st.s==='running')hideGate();
@@ -666,7 +716,7 @@ function onState(prev,next){
       const d=S.draft||{};
       if(Object.values(d).some(v=>String(v||'').trim())){
         const ans={};QUESTIONS.forEach(q=>{ans[q.id]=String(d[q.id]||'').trim();});
-        S.ans=ans;S.score=score(ans);save();
+        S.ans=ans;S.score=score(ans);S.ansTs=Date.now();save();
       }
     }
   }
@@ -674,7 +724,9 @@ function onState(prev,next){
 
 /* ============ ВИД ============ */
 const TABS=['search','dir','show','warrant','found','history','answers'];
+let curTab='search';
 function showTab(name,fromHash){
+  curTab=name;
   document.querySelectorAll('#tabs button').forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;});
   if(!fromHash){try{history.replaceState(null,'','#'+name);}catch(e){}}
   TABS.forEach(t=>{$('p-'+t).hidden=(t!==name);});
@@ -856,7 +908,7 @@ function fillAnswers(){
     const w=el('div','ans');const lab=el('label','label',q.label);lab.htmlFor='a-'+q.id;
     const inp=document.createElement('input');inp.type='text';inp.id='a-'+q.id;inp.autocomplete='off';inp.name=q.id;inp.spellcheck=true;inp.maxLength=200;inp.placeholder=q.ph||'';
     inp.value=(S.draft&&S.draft[q.id])||'';
-    inp.addEventListener('input',()=>{S.draft=S.draft||{};S.draft[q.id]=inp.value;save();});
+    inp.addEventListener('input',()=>{S.draft=S.draft||{};S.draftTs=S.draftTs||{};S.draft[q.id]=inp.value;S.draftTs[q.id]=Date.now();save();});
     w.appendChild(lab);w.appendChild(inp);f.appendChild(w);
   });
   const row=el('div','row');
@@ -868,7 +920,7 @@ function fillAnswers(){
     QUESTIONS.forEach(q=>{const v=$('a-'+q.id).value.trim();if(!v)miss=true;ans[q.id]=v;});
     if(miss){msg.textContent='Ответьте на все вопросы.';armed=false;b.textContent='Сдать ответы';return;}
     if(!armed){armed=true;b.textContent='Подтвердить: изменить нельзя';msg.textContent='После подтверждения ответы изменить нельзя.';return;}
-    S.ans=ans;S.score=score(ans);save();fillAnswers();
+    S.ans=ans;S.score=score(ans);S.ansTs=Date.now();save();fillAnswers();
   });
   row.appendChild(b);f.appendChild(row);f.appendChild(msg);
 }
@@ -881,11 +933,55 @@ function enter(){
   $('intro').hidden=true;$('main').hidden=false;$('meta').hidden=false;$('mTeam').textContent=S.team;tick();
   const h=(location.hash||'').slice(1);showTab(TABS.includes(h)?h:'search',true);
 }
+let uiSig='';
+function sigOf(){return S.apps.join(',')+'|'+S.people.join(',')+'|'+S.log.length+'|'+(S.ans?1:0)+'|'+S.team;}
+/* пришли данные от других участников команды: обновляем экран, не сбивая то, что человек сейчас делает */
+function refreshUI(){
+  $('mTeam').textContent=S.team||'';
+  if(!$('intro').hidden&&S.team&&S.start){enter();uiSig=sigOf();return;}
+  if($('main').hidden)return;
+  if(curTab==='answers'){
+    if(S.ans&&$('submitBtn'))fillAnswers();
+    else if(!S.ans)QUESTIONS.forEach(q=>{const i=$('a-'+q.id);const v=(S.draft&&S.draft[q.id])||'';if(i&&document.activeElement!==i&&i.value!==v)i.value=v;});
+  }
+  const sg=sigOf();if(sg===uiSig)return;uiSig=sg;
+  if(curTab==='show'){const a=$('shP').value,b=$('shI').value;fillShow();$('shP').value=a;$('shI').value=b;}
+  else if(curTab==='warrant'){const ch=[...document.querySelectorAll('#wList input:checked')].map(x=>x.value);fillWarrant();ch.forEach(v=>{const c=$('wc'+v);if(c)c.checked=true;});}
+  else if(curTab==='found')fillFound();
+  else if(curTab==='history')fillHistory();
+}
 function boot(){
   if(S.team&&S.start){enter();}else{$('intro').hidden=false;}
+  uiSig=sigOf();
+}
+async function joinTeam(raw){
+  const c=normCode(raw);if(!c)return;
+  const g=$('gNet');g.textContent='Проверяем код…';
+  const r=await Sync.lookup(c);
+  if(r.nf||r.err){
+    if(r.nf){try{localStorage.removeItem('fh-tc');}catch(e){}}
+    showGate('code');
+    g.textContent=r.nf?'Такого кода нет. Проверьте карточку команды.':(r.err==='sdk'?'Не загрузилась связь с сервером. Обновите страницу.':'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.');
+    return;
+  }
+  activate(c,r.data);
+}
+function activate(c,data){
+  Team.code=c;Team.game=data.game;
+  try{localStorage.setItem('fh-tc',c);}catch(e){}
+  KEY=KEY0+'-'+c;mem=null;S=load();dirty=false;
+  Sync.mergeInto(S,data);saveLocal();
+  Sync.start(c,refreshUI);
+  Net.listen(data.game);
+  boot();
+  gateFromState();
 }
 ['sndBtn','gSnd'].forEach(id=>$(id).addEventListener('click',()=>{Sfx.set(!Sfx.on);syncSndBtn();Sfx.play('key');}));
-$('gCodeForm').addEventListener('submit',e=>{e.preventDefault();const v=$('gCode').value;if(!v.trim())return;Sfx.unlock();Net.setCode(v);gateFromState();});
+$('gCodeForm').addEventListener('submit',async e=>{
+  e.preventDefault();const v=$('gCode').value;if(!v.trim())return;Sfx.unlock();
+  if(isTest(v)){Net.test=true;try{localStorage.removeItem('fh-tc');}catch(x){}KEY=KEY0;mem=null;S=load();setNet(true);boot();gateFromState();return;}
+  await joinTeam(v);
+});
 $('gHostBtn').addEventListener('click',()=>{$('gHostForm').hidden=false;$('gHostCode').focus();});
 $('gHostForm').addEventListener('submit',e=>{
   e.preventDefault();
@@ -897,10 +993,13 @@ $('gHostForm').addEventListener('submit',e=>{
   }else{r.className='gres';r.appendChild(el('p',null,'Команда не сдала ответы.'));}
   $('gHostForm').hidden=true;
 });
-$('startBtn').addEventListener('click',()=>{
+$('startBtn').addEventListener('click',async()=>{
   const n=$('teamName').value.trim();
   if(!n){$('teamName').focus();return;}
-  S.team=n;S.start=Date.now();save();enter();
+  if(Net.test||!Sync.on){S.team=n;S.start=Date.now();save();enter();return;}
+  const b=$('startBtn');b.disabled=true;
+  try{await Sync.claimName(n);}catch(e){S.team=S.team||n;S.start=S.start||Date.now();save();}
+  b.disabled=false;enter();uiSig=sigOf();
 });
 $('teamName').addEventListener('keydown',e=>{if(e.key==='Enter')$('startBtn').click();});
 $('goBtn').addEventListener('click',runSearch);
@@ -926,13 +1025,17 @@ document.querySelectorAll('.foldbar .mini').forEach(b=>b.addEventListener('click
 }));
 $('resetLink').addEventListener('click',()=>{$('resetBox').hidden=!$('resetBox').hidden;});
 $('resetGo').addEventListener('click',()=>{
-  if($('resetCode').value.trim()==='1956'){S={team:'',start:0,log:[],apps:[],people:[],ans:null,score:null};save();location.reload();}
+  if($('resetCode').value.trim()==='1956'){try{localStorage.removeItem(KEY);localStorage.removeItem('fh-tc');}catch(e){}location.href=location.pathname;}
 });
 setInterval(tick,30000);
 syncSndBtn();
-boot();
-Net.connect();
-gateFromState();
+(function(){
+  if(Net.test){boot();gateFromState();return;}
+  let c='';try{c=normCode(new URLSearchParams(location.search).get('t'))||normCode(localStorage.getItem('fh-tc'));}catch(e){}
+  if(!c){gateFromState();return;}
+  showGate('link');
+  joinTeam(c);
+})();
 })();
 </script>
 
